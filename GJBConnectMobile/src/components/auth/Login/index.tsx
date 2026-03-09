@@ -23,6 +23,7 @@ import {
   processPendingVerification,
   resendVerificationEmail,
 } from './services';
+import { useAuthStore } from '../../../store/authStore';
 import {
   Mail,
   Lock,
@@ -41,6 +42,7 @@ export const LoginScreen: React.FC = () => {
   const route = useRoute();
   const params = route.params as any;
   const prefilledEmail = params?.prefilledEmail || '';
+  const setUser = useAuthStore((state) => state.setUser);
 
   const {
     formData,
@@ -95,6 +97,9 @@ export const LoginScreen: React.FC = () => {
         setIsLoading(false);
         return;
       }
+
+      // Set user in store
+      setUser(data.user);
 
       // Process pending verification if any
       const result = await processPendingVerification(data.user.id);
@@ -183,7 +188,6 @@ export const LoginScreen: React.FC = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
-        {/* Decorative circles */}
         <View style={[styles.circle, styles.circle1]} />
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
@@ -197,7 +201,6 @@ export const LoginScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
                 <Image
@@ -212,7 +215,6 @@ export const LoginScreen: React.FC = () => {
               <Text style={styles.subtitle}>Sign in to access your business network</Text>
             </View>
 
-            {/* Card */}
             <View style={styles.card}>
               {message && (
                 <View style={[styles.messageContainer, message.type === 'success' ? styles.successMessage : styles.errorMessage]}>
@@ -228,7 +230,6 @@ export const LoginScreen: React.FC = () => {
               )}
 
               <View style={styles.form}>
-                {/* Email */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Email Address *</Text>
                   <View style={[
@@ -250,7 +251,6 @@ export const LoginScreen: React.FC = () => {
                   </View>
                 </View>
 
-                {/* Password */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelRow}>
                     <Text style={styles.label}>Password *</Text>
@@ -276,7 +276,6 @@ export const LoginScreen: React.FC = () => {
                   </View>
                 </View>
 
-                {/* Submit Button */}
                 <TouchableOpacity
                   style={[styles.submitButton, isLoading && styles.disabledButton]}
                   onPress={handleLogin}
@@ -313,7 +312,6 @@ export const LoginScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Footer */}
             <View style={styles.footer}>
               <View style={styles.footerItem}>
                 <LinearGradient
