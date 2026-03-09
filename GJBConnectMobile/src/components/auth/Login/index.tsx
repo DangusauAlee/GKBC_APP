@@ -109,10 +109,10 @@ export const LoginScreen: React.FC = () => {
         setMessage({ text: result.message, type: 'error' });
       }
 
-      // Navigate to Home
+      // Navigate to Tabs
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Home' }],
+        routes: [{ name: 'MainTabs' }],
       });
     } catch (error: any) {
       console.error('Login error:', error);

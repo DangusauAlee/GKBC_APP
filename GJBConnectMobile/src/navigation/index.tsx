@@ -6,7 +6,7 @@ import { ForgotPasswordScreen } from '../components/auth/ForgotPassword';
 import { ResetPasswordScreen } from '../components/auth/ResetPassword';
 import { TermsScreen } from '../components/static/Terms';
 import { PrivacyScreen } from '../components/static/Privacy';
-import { HomeScreen } from '../screens/Home';
+import { BottomTabNavigator } from './BottomTabNavigator';
 
 // Placeholder for Profile screen
 const ProfileScreen = () => null;
@@ -14,7 +14,7 @@ const ProfileScreen = () => null;
 export type RootStackParamList = {
   Login: { prefilledEmail?: string; message?: string; messageType?: 'success' | 'error' } | undefined;
   SignUp: { prefilledEmail?: string } | undefined;
-  Home: undefined;
+  MainTabs: undefined;
   ForgotPassword: undefined;
   ResetPassword: undefined;
   Terms: undefined;
@@ -30,7 +30,7 @@ export function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         <Stack.Screen name="Terms" component={TermsScreen} />
