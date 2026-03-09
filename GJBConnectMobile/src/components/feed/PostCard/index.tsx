@@ -634,6 +634,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 12,
     overflow: 'hidden',
+    height: MEDIA_WIDTH, // default height for images/gallery
   },
   media: {
     width: '100%',

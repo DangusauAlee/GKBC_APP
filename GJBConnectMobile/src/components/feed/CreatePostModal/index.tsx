@@ -11,9 +11,11 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import Toast from 'react-native-toast-message';
 import { supabase } from '../../../lib/supabase';
 import { feedService } from '../../../services/supabase/feed';
 import { useAuthStore } from '../../../store/authStore';
@@ -24,8 +26,19 @@ const { width } = Dimensions.get('window');
 interface CreatePostModalProps {
   visible: boolean;
   onClose: () => void;
-  onPostCreated: (postId: string) => void; // Now returns the new post ID
+  onPostCreated: (postId: string) => void;
 }
+
+// Helper to convert URI to Blob on web
+const uriToBlob = async (uri: string): Promise<Blob> => {
+  if (Platform.OS === 'web') {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  }
+  // On native, we'll use the uri directly in FormData
+  return null as any; // Not used on native
+};
 
 export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   visible,
@@ -40,12 +53,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const pickMedia = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant media library permissions to upload.');
+      Toast.show({
+        type: 'error',
+        text1: 'Permission needed',
+        text2: 'Please grant media library permissions to upload.',
+      });
       return;
     }
 
+    // Use new MediaType array instead of deprecated MediaTypeOptions
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images', 'videos'],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
@@ -66,11 +84,19 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   const handleSubmit = async () => {
     if (!content.trim() && files.length === 0) {
-      Alert.alert('Error', 'Please add content or media');
+      Toast.show({
+        type: 'error',
+        text1: 'Cannot post',
+        text2: 'Please add content or media',
+      });
       return;
     }
     if (!user) {
-      Alert.alert('Error', 'Please login to post');
+      Toast.show({
+        type: 'error',
+        text1: 'Not logged in',
+        text2: 'Please login to post',
+      });
       return;
     }
 
@@ -83,20 +109,38 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
         const filePath = `posts/${user.id}/${fileName}`;
 
-        const formData = new FormData();
-        formData.append('file', {
-          uri: file.uri,
-          name: file.name,
-          type: file.type.startsWith('video') ? 'video/mp4' : 'image/jpeg',
-        } as any);
+        let uploadError = null;
 
-        const { error: uploadError } = await supabase.storage
-          .from('post-media')
-          .upload(filePath, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+        if (Platform.OS === 'web') {
+          // On web, fetch the blob and upload using Supabase storage
+          const blob = await uriToBlob(file.uri);
+          const { error } = await supabase.storage
+            .from('post-media')
+            .upload(filePath, blob, {
+              contentType: file.type.startsWith('video') ? 'video/mp4' : 'image/jpeg',
+            });
+          uploadError = error;
+        } else {
+          // On native, use FormData approach (or Supabase's built-in upload)
+          const formData = new FormData();
+          formData.append('file', {
+            uri: file.uri,
+            name: file.name,
+            type: file.type.startsWith('video') ? 'video/mp4' : 'image/jpeg',
+          } as any);
 
-        if (uploadError) throw new Error(`Upload failed: ${file.name}`);
+          const { error } = await supabase.storage
+            .from('post-media')
+            .upload(filePath, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            });
+          uploadError = error;
+        }
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Upload failed for ${file.name}: ${uploadError.message}`);
+        }
 
         const { data: urlData } = supabase.storage.from('post-media').getPublicUrl(filePath);
         mediaUrls.push(urlData.publicUrl);
@@ -118,12 +162,23 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         tags
       );
 
+      Toast.show({
+        type: 'success',
+        text1: 'Post created!',
+        text2: 'Your post is now live.',
+      });
+
       setContent('');
       setFiles([]);
-      onPostCreated(newPostId); // Pass the new post ID up
+      onPostCreated(newPostId);
       onClose();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create post');
+      console.error('Post creation error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to create post',
+        text2: error.message || 'Please try again',
+      });
     } finally {
       setIsPosting(false);
     }
