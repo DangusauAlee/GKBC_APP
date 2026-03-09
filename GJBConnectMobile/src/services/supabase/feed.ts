@@ -134,33 +134,43 @@ export const feedService = {
   },
 
   async getPostLikersPreview(postId: string, limit: number = 3): Promise<LikersPreview[]> {
-    const { data, error } = await supabase.rpc('get_post_likers_preview', {
-      p_post_id: postId,
-      p_limit: limit,
-    });
-    if (error) {
-      console.warn('getPostLikersPreview error', error);
+    try {
+      const { data, error } = await supabase.rpc('get_post_likers_preview', {
+        p_post_id: postId,
+        p_limit: limit,
+      });
+      if (error) {
+        console.warn('getPostLikersPreview RPC error, using fallback', error);
+        return [];
+      }
+      return data || [];
+    } catch (err) {
+      console.warn('getPostLikersPreview failed', err);
       return [];
     }
-    return data || [];
   },
 
   async getPostFirstComment(postId: string): Promise<Comment | null> {
-    const { data, error } = await supabase
-      .rpc('get_post_first_comment', { p_post_id: postId });
-    if (error || !data) return null;
-    return {
-      id: data.id,
-      author_id: data.author_id,
-      author_name: data.author_name || 'User',
-      author_avatar: data.author_avatar || '',
-      author_verified: data.author_verified || false,
-      content: data.content,
-      likes_count: data.likes_count || 0,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
-      has_liked: false,
-    };
+    try {
+      const { data, error } = await supabase
+        .rpc('get_post_first_comment', { p_post_id: postId });
+      if (error || !data) return null;
+      return {
+        id: data.id,
+        author_id: data.author_id,
+        author_name: data.author_name || 'User',
+        author_avatar: data.author_avatar || '',
+        author_verified: data.author_verified || false,
+        content: data.content,
+        likes_count: data.likes_count || 0,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        has_liked: false,
+      };
+    } catch (err) {
+      console.warn('getPostFirstComment failed', err);
+      return null;
+    }
   },
 
   async createPost(

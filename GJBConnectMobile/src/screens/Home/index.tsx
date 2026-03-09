@@ -84,8 +84,8 @@ export const HomeScreen: React.FC = () => {
       // Scroll to top to show the new post
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
-      // Optionally refetch in the background to ensure consistency
-      refetch();
+      // Do NOT refetch automatically – let the user pull to refresh if they want
+      // This keeps the new post at the top until manual refresh
     } catch (error) {
       console.error('Failed to fetch new post', error);
       // Fallback: just refetch

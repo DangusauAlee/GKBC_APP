@@ -9,11 +9,12 @@ import {
   ActivityIndicator,
   Dimensions,
   AppState,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { formatDistanceToNow } from 'date-fns';
-import { Video, ResizeMode } from 'expo-av';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useLikeShare } from '../../../hooks/useLikeShare';
 import { useComments } from '../../../hooks/useComments';
@@ -30,7 +31,18 @@ import {
   Play,
 } from 'lucide-react-native';
 
-const { width } = Dimensions.get('window');
+// Conditionally import Video only on native
+let Video: any = null;
+let ResizeMode: any = null;
+if (Platform.OS !== 'web') {
+  const ExpoAV = require('expo-av');
+  Video = ExpoAV.Video;
+  ResizeMode = ExpoAV.ResizeMode;
+}
+
+const { width: screenWidth } = Dimensions.get('window');
+const CARD_HORIZONTAL_PADDING = 12;
+const MEDIA_WIDTH = screenWidth - CARD_HORIZONTAL_PADDING * 2;
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
@@ -47,7 +59,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   const { toggleLike, toggleShare } = useLikeShare();
   const { comments, addComment, isLoading: commentsLoading } = useComments(post.id);
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<Video>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const videoRef = useRef<any>(null);
 
   useEffect(() => {
     const fetchPreviews = async () => {
@@ -63,9 +76,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     fetchPreviews();
   }, [post.id, post.likes_count, post.comments_count]);
 
-  // Control video playback based on visibility and app state
+  // Control video playback based on visibility and app state (native only)
   useEffect(() => {
-    if (post.media_type !== 'video') return;
+    if (Platform.OS === 'web' || post.media_type !== 'video' || !isVideoLoaded) return;
     if (isVisible) {
       videoRef.current?.playAsync();
       setIsPlaying(true);
@@ -74,22 +87,22 @@ export const PostCard: React.FC<PostCardProps> = ({
       videoRef.current?.pauseAsync();
       setIsPlaying(false);
     }
-  }, [isVisible, post.media_type, post.id, onPlayVideo]);
+  }, [isVisible, post.media_type, post.id, onPlayVideo, isVideoLoaded]);
 
-  // Pause video when app goes to background
+  // Pause video when app goes to background (native only)
   useEffect(() => {
-    if (post.media_type !== 'video') return;
+    if (Platform.OS === 'web' || post.media_type !== 'video') return;
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState.match(/inactive|background/)) {
         videoRef.current?.pauseAsync();
         setIsPlaying(false);
-      } else if (nextAppState === 'active' && isVisible) {
+      } else if (nextAppState === 'active' && isVisible && isVideoLoaded) {
         videoRef.current?.playAsync();
         setIsPlaying(true);
       }
     });
     return () => subscription.remove();
-  }, [post.media_type, isVisible]);
+  }, [post.media_type, isVisible, isVideoLoaded]);
 
   const formatTimeAgo = (date: string) => {
     try {
@@ -182,36 +195,74 @@ export const PostCard: React.FC<PostCardProps> = ({
   const renderMedia = () => {
     if (post.media_urls.length === 0) return null;
 
+    // Common media wrapper with centering
+    const MediaWrapper = ({ children }: { children: React.ReactNode }) => (
+      <View style={styles.mediaWrapper}>
+        <View style={[styles.mediaContainer, { width: MEDIA_WIDTH }]}>
+          {children}
+        </View>
+      </View>
+    );
+
     if (post.media_type === 'video') {
+      if (Platform.OS === 'web') {
+        return (
+          <GestureDetector gesture={tapGesture}>
+            <MediaWrapper>
+              <View style={[styles.media, { height: MEDIA_WIDTH * 0.5625 }]}>
+                <Image
+                  source={{ uri: post.media_urls[0] }}
+                  style={styles.mediaContent}
+                  resizeMode="cover"
+                />
+                <View style={styles.playButton}>
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                    style={styles.playButtonGradient}
+                  >
+                    <Play size={24} color="#fff" fill="#fff" />
+                  </LinearGradient>
+                </View>
+              </View>
+            </MediaWrapper>
+          </GestureDetector>
+        );
+      }
+
       return (
         <GestureDetector gesture={tapGesture}>
-          <View style={styles.mediaContainer}>
-            <Video
-              ref={videoRef}
-              source={{ uri: post.media_urls[0] }}
-              style={styles.media}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay={false}
-              isLooping={false}
-              onError={(error) => console.log('Video error', error)}
-            />
-            {!isPlaying && (
-              <TouchableOpacity
-                style={styles.playButton}
-                onPress={() => {
-                  videoRef.current?.playAsync();
-                  setIsPlaying(true);
-                }}
-              >
-                <LinearGradient
-                  colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
-                  style={styles.playButtonGradient}
+          <MediaWrapper>
+            <View style={[styles.media, { height: MEDIA_WIDTH * 0.5625 }]}>
+              <Video
+                ref={videoRef}
+                source={{ uri: post.media_urls[0] }}
+                style={styles.mediaContent}
+                resizeMode={ResizeMode.COVER}
+                shouldPlay={false}
+                isLooping={false}
+                onLoad={() => setIsVideoLoaded(true)}
+                onError={(error) => console.log('Video error', error)}
+              />
+              {!isPlaying && (
+                <TouchableOpacity
+                  style={styles.playButton}
+                  onPress={() => {
+                    if (isVideoLoaded) {
+                      videoRef.current?.playAsync();
+                      setIsPlaying(true);
+                    }
+                  }}
                 >
-                  <Play size={24} color="#fff" fill="#fff" />
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
-          </View>
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                    style={styles.playButtonGradient}
+                  >
+                    <Play size={24} color="#fff" fill="#fff" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+            </View>
+          </MediaWrapper>
         </GestureDetector>
       );
     }
@@ -219,11 +270,13 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (post.media_type === 'image') {
       return (
         <GestureDetector gesture={tapGesture}>
-          <Image
-            source={{ uri: post.media_urls[0] }}
-            style={[styles.media, styles.mediaImage]}
-            resizeMode="cover"
-          />
+          <MediaWrapper>
+            <Image
+              source={{ uri: post.media_urls[0] }}
+              style={[styles.media, styles.mediaImage]}
+              resizeMode="contain"
+            />
+          </MediaWrapper>
         </GestureDetector>
       );
     }
@@ -231,18 +284,24 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (post.media_type === 'gallery') {
       return (
         <GestureDetector gesture={tapGesture}>
-          <View style={styles.galleryContainer}>
-            {post.media_urls.slice(0, 4).map((url, index) => (
-              <View key={index} style={styles.galleryItem}>
-                <Image source={{ uri: url }} style={styles.galleryImage} />
-                {index === 3 && post.media_urls.length > 4 && (
-                  <View style={styles.galleryOverlay}>
-                    <Text style={styles.galleryOverlayText}>+{post.media_urls.length - 4}</Text>
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
+          <MediaWrapper>
+            <View style={[styles.media, styles.galleryContainer]}>
+              {post.media_urls.slice(0, 4).map((url, index) => (
+                <View key={index} style={styles.galleryItem}>
+                  <Image
+                    source={{ uri: url }}
+                    style={styles.galleryImage}
+                    resizeMode="cover"
+                  />
+                  {index === 3 && post.media_urls.length > 4 && (
+                    <View style={styles.galleryOverlay}>
+                      <Text style={styles.galleryOverlayText}>+{post.media_urls.length - 4}</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          </MediaWrapper>
         </GestureDetector>
       );
     }
@@ -251,7 +310,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   };
 
   return (
-    <View style={styles.card}>
+    <BlurView intensity={20} tint="light" style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileContainer}>
@@ -434,23 +493,21 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </View>
       )}
-    </View>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderRadius: 20,
+    marginHorizontal: CARD_HORIZONTAL_PADDING,
     marginBottom: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.9)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+    elevation: 5,
   },
   header: {
     flexDirection: 'row',
@@ -534,10 +591,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     elevation: 3,
     zIndex: 10,
   },
@@ -571,17 +625,26 @@ const styles = StyleSheet.create({
     color: '#16a34a',
     fontWeight: '500',
   },
+  mediaWrapper: {
+    alignItems: 'center',
+    width: '100%',
+  },
   mediaContainer: {
-    width: width - 32,
-    height: width - 32,
     position: 'relative',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   media: {
     width: '100%',
     height: '100%',
   },
+  mediaContent: {
+    width: '100%',
+    height: '100%',
+  },
   mediaImage: {
-    resizeMode: 'cover',
+    // handled by resizeMode prop
   },
   playButton: {
     position: 'absolute',
@@ -601,8 +664,7 @@ const styles = StyleSheet.create({
   galleryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    width: width - 32,
-    height: width - 32,
+    height: MEDIA_WIDTH,
   },
   galleryItem: {
     width: '50%',
@@ -683,7 +745,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: 'rgba(0,0,0,0.05)',
     marginTop: 8,
     paddingTop: 4,
   },
@@ -708,7 +770,7 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: 'rgba(0,0,0,0.05)',
     padding: 12,
   },
   addComment: {
