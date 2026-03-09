@@ -9,16 +9,16 @@ import {
   Platform,
   ActivityIndicator,
   Image,
-  Alert,
   SafeAreaView,
   StyleSheet,
+  Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusModal } from '../../shared/StatusModal';
 import { useSignUpForm } from './hooks';
 import { checkUserExists, createNewUser, storePendingVerification } from './services';
-import { supabase } from '../../../lib/supabase';
 import {
   Mail,
   Lock,
@@ -59,8 +59,8 @@ export const SignUpScreen: React.FC = () => {
   const [modalType, setModalType] = useState<'already_registered' | 'new_user_success'>('new_user_success');
   const [redirectSeconds, setRedirectSeconds] = useState(10);
   const [modalEmail, setModalEmail] = useState('');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  // For countdown
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -197,337 +197,404 @@ export const SignUpScreen: React.FC = () => {
         redirectSeconds={redirectSeconds}
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
+      <LinearGradient
+        colors={['#f9fafb', '#f0fdf4']}
+        style={styles.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+        {/* Decorative circles */}
+        <View style={[styles.circle, styles.circle1]} />
+        <View style={[styles.circle, styles.circle2]} />
+        <View style={[styles.circle, styles.circle3]} />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
         >
-          {/* Header with logo */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../../../../assets/GJBCLOGO.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('../../../../assets/GJBCLOGO.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.appName}>GJBC</Text>
+              <Text style={styles.tagline}>Driving Economic Growth</Text>
+              <Text style={styles.title}>Create Your Account</Text>
+              <Text style={styles.subtitle}>Join Greater Jigawa and grow your business</Text>
             </View>
-            <Text style={styles.appName}>GJBC</Text>
-            <Text style={styles.tagline}>Driving Economic Growth</Text>
-            <Text style={styles.title}>Create Your Account</Text>
-            <Text style={styles.subtitle}>Join Greater Jigawa and grow your business</Text>
-          </View>
 
-          {/* Card */}
-          <View style={styles.card}>
-            {serverError && (
-              <View style={styles.errorContainer}>
-                <AlertCircle size={16} color="#dc2626" />
-                <Text style={styles.errorText}>{serverError}</Text>
-              </View>
-            )}
-
-            {/* Form */}
-            <View style={styles.form}>
-              {/* First Name & Last Name */}
-              <View style={styles.row}>
-                <View style={[styles.inputGroup, styles.halfWidth]}>
-                  <Text style={styles.label}>First Name *</Text>
-                  <View style={styles.inputWrapper}>
-                    <User size={16} color="#9ca3af" style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, validationErrors.firstName && styles.inputError]}
-                      placeholder="Ahmad"
-                      placeholderTextColor="#9ca3af"
-                      value={formData.firstName}
-                      onChangeText={(text) => handleInputChange('firstName', text)}
-                    />
-                  </View>
-                  {validationErrors.firstName && (
-                    <Text style={styles.errorMessage}>
-                      <X size={10} color="#dc2626" /> {validationErrors.firstName}
-                    </Text>
-                  )}
-                </View>
-
-                <View style={[styles.inputGroup, styles.halfWidth]}>
-                  <Text style={styles.label}>Last Name *</Text>
-                  <TextInput
-                    style={[styles.input, validationErrors.lastName && styles.inputError]}
-                    placeholder="Abubakar"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.lastName}
-                    onChangeText={(text) => handleInputChange('lastName', text)}
-                  />
-                  {validationErrors.lastName && (
-                    <Text style={styles.errorMessage}>
-                      <X size={10} color="#dc2626" /> {validationErrors.lastName}
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Email */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email *</Text>
-                <View style={styles.inputWrapper}>
-                  <Mail size={16} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, validationErrors.email && styles.inputError]}
-                    placeholder="ahmad@company.com"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.email}
-                    onChangeText={(text) => handleInputChange('email', text)}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-                {validationErrors.email && (
-                  <Text style={styles.errorMessage}>
-                    <X size={10} color="#dc2626" /> {validationErrors.email}
-                  </Text>
-                )}
-              </View>
-
-              {/* Phone */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Phone Number (Optional)</Text>
-                <View style={styles.inputWrapper}>
-                  <Phone size={16} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, validationErrors.phone && styles.inputError]}
-                    placeholder="+2348000000000"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.phone}
-                    onChangeText={(text) => handleInputChange('phone', text)}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-                {validationErrors.phone && (
-                  <Text style={styles.errorMessage}>
-                    <X size={10} color="#dc2626" /> {validationErrors.phone}
-                  </Text>
-                )}
-                <Text style={styles.hint}>Format: +234 followed by 10 digits</Text>
-              </View>
-
-              {/* Account Type */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Account Type *</Text>
-                <View style={styles.infoBox}>
-                  <Text style={styles.infoTitle}>Why become a Verified Member?</Text>
-                  <Text style={styles.infoText}>• Enhanced Trust & Credibility</Text>
-                  <Text style={styles.infoText}>• Full Platform Access</Text>
-                  <Text style={styles.infoText}>• Direct Customer Communication</Text>
-                  <Text style={styles.infoText}>• Showcase Your Products</Text>
-                  <Text style={styles.infoText}>• Priority Support</Text>
-                  <Text style={styles.infoNote}>
-                    After payment, upload your receipt and complete signup.
-                  </Text>
-                </View>
-                <View style={styles.radioGroup}>
-                  <TouchableOpacity
-                    style={styles.radioOption}
-                    onPress={() => setUserType('regular')}
-                  >
-                    <View style={[styles.radioCircle, userType === 'regular' && styles.radioSelected]} />
-                    <Text style={styles.radioLabel}>Regular User</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.radioOption}
-                    onPress={() => setUserType('verified')}
-                  >
-                    <View style={[styles.radioCircle, userType === 'verified' && styles.radioSelected]} />
-                    <Text style={styles.radioLabel}>Verified User</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Verified User Fields */}
-              {userType === 'verified' && (
-                <View style={styles.verifiedSection}>
-                  <Text style={styles.sectionTitle}>Verified Member Application</Text>
-                  <View style={styles.feeBox}>
-                    <Text style={styles.feeText}>Annual Fee: ₦10,000</Text>
-                  </View>
-                  <View style={styles.bankDetails}>
-                    <Text style={styles.bankText}>Bank Name: Kayi Microfinance Bank</Text>
-                    <Text style={styles.bankText}>Account Name: Greater Jigawa Business Community</Text>
-                    <Text style={styles.bankText}>Account Number: 4102542176</Text>
-                    <Text style={styles.bankText}>
-                      WhatsApp:{' '}
-                      <Text style={styles.link} onPress={() => {/* open whatsapp */}}>
-                        +234 802 310 4333
-                      </Text>
-                    </Text>
-                  </View>
-
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Upload Payment Receipt *</Text>
-                    <TouchableOpacity style={styles.filePicker} onPress={pickReceipt}>
-                      <Upload size={16} color="#16a34a" />
-                      <Text style={styles.filePickerText}>
-                        {receiptFile ? receiptFile.name : 'Choose file'}
-                      </Text>
-                    </TouchableOpacity>
-                    {validationErrors.receipt && (
-                      <Text style={styles.errorMessage}>
-                        <X size={10} color="#dc2626" /> {validationErrors.receipt}
-                      </Text>
-                    )}
-                    <Text style={styles.hint}>Upload a screenshot or PDF of your payment receipt.</Text>
-                  </View>
+            {/* Card */}
+            <View style={styles.card}>
+              {serverError && (
+                <View style={[styles.messageContainer, styles.errorMessage]}>
+                  <AlertCircle size={16} color="#dc2626" />
+                  <Text style={[styles.messageText, styles.errorText]}>{serverError}</Text>
                 </View>
               )}
 
-              {/* Password */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>Password *</Text>
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Text style={styles.toggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.inputWrapper}>
-                  <Lock size={16} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, validationErrors.password && styles.inputError]}
-                    placeholder="Create a strong password"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.password}
-                    onChangeText={(text) => handleInputChange('password', text)}
-                    secureTextEntry={!showPassword}
-                  />
-                </View>
-                {formData.password ? (
-                  <View style={styles.strengthContainer}>
-                    <Text style={styles.strengthLabel}>
-                      Password strength: <Text style={{ color: getPasswordStrengthColor() }}>{getPasswordStrengthLabel()}</Text>
-                    </Text>
-                    <View style={styles.strengthBar}>
-                      <View
-                        style={[
-                          styles.strengthFill,
-                          { width: `${passwordStrength}%`, backgroundColor: getPasswordStrengthColor() },
-                        ]}
+              <View style={styles.form}>
+                {/* First Name & Last Name Row */}
+                <View style={styles.row}>
+                  <View style={[styles.inputGroup, styles.halfWidth]}>
+                    <Text style={styles.label}>First Name *</Text>
+                    <View style={[
+                      styles.inputWrapper,
+                      focusedField === 'firstName' && styles.inputWrapperFocused
+                    ]}>
+                      <User size={18} color="#16a34a" style={styles.inputIcon} />
+                      <TextInput
+                        style={[styles.input, validationErrors.firstName && styles.inputError]}
+                        placeholder="Ahmad"
+                        placeholderTextColor="#9ca3af"
+                        value={formData.firstName}
+                        onChangeText={(text) => handleInputChange('firstName', text)}
+                        onFocus={() => setFocusedField('firstName')}
+                        onBlur={() => setFocusedField(null)}
                       />
                     </View>
+                    {validationErrors.firstName && (
+                      <Text style={styles.errorMessage}>
+                        <X size={10} color="#dc2626" /> {validationErrors.firstName}
+                      </Text>
+                    )}
                   </View>
-                ) : null}
-                {validationErrors.password && (
-                  <Text style={styles.errorMessage}>
-                    <X size={10} color="#dc2626" /> {validationErrors.password}
-                  </Text>
-                )}
-              </View>
 
-              {/* Confirm Password */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Confirm Password *</Text>
-                <TextInput
-                  style={[styles.input, validationErrors.confirmPassword && styles.inputError]}
-                  placeholder="Re-enter your password"
-                  placeholderTextColor="#9ca3af"
-                  value={formData.confirmPassword}
-                  onChangeText={(text) => handleInputChange('confirmPassword', text)}
-                  secureTextEntry={!showPassword}
-                />
-                {validationErrors.confirmPassword && (
-                  <Text style={styles.errorMessage}>
-                    <X size={10} color="#dc2626" /> {validationErrors.confirmPassword}
-                  </Text>
-                )}
-              </View>
-
-              {/* Terms Agreement */}
-              <View style={styles.termsContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => handleInputChange('agreeToTerms', !formData.agreeToTerms)}
-                >
-                  <View style={[styles.checkboxBox, formData.agreeToTerms && styles.checkboxChecked]}>
-                    {formData.agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+                  <View style={[styles.inputGroup, styles.halfWidth]}>
+                    <Text style={styles.label}>Last Name *</Text>
+                    <View style={[
+                      styles.inputWrapper,
+                      focusedField === 'lastName' && styles.inputWrapperFocused
+                    ]}>
+                      <TextInput
+                        style={[styles.input, validationErrors.lastName && styles.inputError]}
+                        placeholder="Abubakar"
+                        placeholderTextColor="#9ca3af"
+                        value={formData.lastName}
+                        onChangeText={(text) => handleInputChange('lastName', text)}
+                        onFocus={() => setFocusedField('lastName')}
+                        onBlur={() => setFocusedField(null)}
+                      />
+                    </View>
+                    {validationErrors.lastName && (
+                      <Text style={styles.errorMessage}>
+                        <X size={10} color="#dc2626" /> {validationErrors.lastName}
+                      </Text>
+                    )}
                   </View>
-                </TouchableOpacity>
-                <Text style={styles.termsText}>
-                  I agree to the{' '}
-                  <Text style={styles.link} onPress={() => navigation.navigate('Terms' as never)}>
-                    Terms & Conditions
-                  </Text>{' '}
-                  and{' '}
-                  <Text style={styles.link} onPress={() => navigation.navigate('Privacy' as never)}>
-                    Privacy Policy
-                  </Text>
-                </Text>
-              </View>
-              {validationErrors.agreeToTerms && (
-                <Text style={styles.errorMessage}>
-                  <X size={10} color="#dc2626" /> {validationErrors.agreeToTerms}
-                </Text>
-              )}
+                </View>
 
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[styles.submitButton, (isLoading || isStoringReceipt) && styles.disabledButton]}
-                onPress={handleSubmit}
-                disabled={isLoading || isStoringReceipt}
-              >
-                {isLoading || isStoringReceipt ? (
-                  <>
-                    <ActivityIndicator size="small" color="#fff" />
-                    <Text style={styles.submitText}>
-                      {isStoringReceipt ? 'Saving...' : 'Processing...'}
+                {/* Email */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Email *</Text>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'email' && styles.inputWrapperFocused
+                  ]}>
+                    <Mail size={18} color="#16a34a" style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, validationErrors.email && styles.inputError]}
+                      placeholder="ahmad@company.com"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.email}
+                      onChangeText={(text) => handleInputChange('email', text)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                  </View>
+                  {validationErrors.email && (
+                    <Text style={styles.errorMessage}>
+                      <X size={10} color="#dc2626" /> {validationErrors.email}
                     </Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.submitText}>Create Account</Text>
-                    <ArrowRight size={16} color="#fff" />
-                  </>
+                  )}
+                </View>
+
+                {/* Phone */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Phone Number (Optional)</Text>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'phone' && styles.inputWrapperFocused
+                  ]}>
+                    <Phone size={18} color="#16a34a" style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, validationErrors.phone && styles.inputError]}
+                      placeholder="+2348000000000"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.phone}
+                      onChangeText={(text) => handleInputChange('phone', text)}
+                      onFocus={() => setFocusedField('phone')}
+                      onBlur={() => setFocusedField(null)}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                  {validationErrors.phone && (
+                    <Text style={styles.errorMessage}>
+                      <X size={10} color="#dc2626" /> {validationErrors.phone}
+                    </Text>
+                  )}
+                  <Text style={styles.hint}>Format: +234 followed by 10 digits</Text>
+                </View>
+
+                {/* Account Type */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Account Type *</Text>
+                  <View style={styles.infoBox}>
+                    <Text style={styles.infoTitle}>Why become a Verified Member?</Text>
+                    <Text style={styles.infoText}>• Enhanced Trust & Credibility</Text>
+                    <Text style={styles.infoText}>• Full Platform Access</Text>
+                    <Text style={styles.infoText}>• Direct Customer Communication</Text>
+                    <Text style={styles.infoText}>• Showcase Your Products</Text>
+                    <Text style={styles.infoText}>• Priority Support</Text>
+                    <Text style={styles.infoNote}>
+                      After payment, upload your receipt and complete signup.
+                    </Text>
+                  </View>
+                  <View style={styles.radioGroup}>
+                    <TouchableOpacity
+                      style={styles.radioOption}
+                      onPress={() => setUserType('regular')}
+                    >
+                      <View style={[styles.radioCircle, userType === 'regular' && styles.radioSelected]} />
+                      <Text style={styles.radioLabel}>Regular User</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.radioOption}
+                      onPress={() => setUserType('verified')}
+                    >
+                      <View style={[styles.radioCircle, userType === 'verified' && styles.radioSelected]} />
+                      <Text style={styles.radioLabel}>Verified User</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Verified User Fields */}
+                {userType === 'verified' && (
+                  <View style={styles.verifiedSection}>
+                    <Text style={styles.sectionTitle}>Verified Member Application</Text>
+                    <View style={styles.feeBox}>
+                      <Text style={styles.feeText}>Annual Fee: ₦10,000</Text>
+                    </View>
+                    <View style={styles.bankDetails}>
+                      <Text style={styles.bankText}>Bank Name: Kayi Microfinance Bank</Text>
+                      <Text style={styles.bankText}>Account Name: Greater Jigawa Business Community</Text>
+                      <Text style={styles.bankText}>Account Number: 4102542176</Text>
+                      <Text style={styles.bankText}>
+                        WhatsApp:{' '}
+                        <Text style={styles.link} onPress={() => {/* open whatsapp */}}>
+                          +234 802 310 4333
+                        </Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                      <Text style={styles.label}>Upload Payment Receipt *</Text>
+                      <TouchableOpacity style={styles.filePicker} onPress={pickReceipt}>
+                        <Upload size={16} color="#16a34a" />
+                        <Text style={styles.filePickerText}>
+                          {receiptFile ? receiptFile.name : 'Choose file'}
+                        </Text>
+                      </TouchableOpacity>
+                      {validationErrors.receipt && (
+                        <Text style={styles.errorMessage}>
+                          <X size={10} color="#dc2626" /> {validationErrors.receipt}
+                        </Text>
+                      )}
+                      <Text style={styles.hint}>Upload a screenshot or PDF of your payment receipt.</Text>
+                    </View>
+                  </View>
                 )}
-              </TouchableOpacity>
 
-              <View style={styles.divider}>
-                <View style={styles.line} />
-                <Text style={styles.dividerText}>Already have an account?</Text>
-                <View style={styles.line} />
-              </View>
+                {/* Password */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Password *</Text>
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Text style={styles.toggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'password' && styles.inputWrapperFocused
+                  ]}>
+                    <Lock size={18} color="#16a34a" style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, validationErrors.password && styles.inputError]}
+                      placeholder="Create a strong password"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.password}
+                      onChangeText={(text) => handleInputChange('password', text)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                      secureTextEntry={!showPassword}
+                    />
+                  </View>
+                  {formData.password ? (
+                    <View style={styles.strengthContainer}>
+                      <Text style={styles.strengthLabel}>
+                        Password strength:{' '}
+                        <Text style={{ color: getPasswordStrengthColor() }}>
+                          {getPasswordStrengthLabel()}
+                        </Text>
+                      </Text>
+                      <View style={styles.strengthBar}>
+                        <View
+                          style={[
+                            styles.strengthFill,
+                            {
+                              width: `${passwordStrength}%`,
+                              backgroundColor: getPasswordStrengthColor(),
+                            },
+                          ]}
+                        />
+                      </View>
+                    </View>
+                  ) : null}
+                  {validationErrors.password && (
+                    <Text style={styles.errorMessage}>
+                      <X size={10} color="#dc2626" /> {validationErrors.password}
+                    </Text>
+                  )}
+                </View>
 
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={() => navigation.navigate('Login' as never)}
-              >
-                <Text style={styles.secondaryButtonText}>Sign In Instead</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                {/* Confirm Password */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Confirm Password *</Text>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'confirmPassword' && styles.inputWrapperFocused
+                  ]}>
+                    <TextInput
+                      style={[styles.input, validationErrors.confirmPassword && styles.inputError]}
+                      placeholder="Re-enter your password"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.confirmPassword}
+                      onChangeText={(text) => handleInputChange('confirmPassword', text)}
+                      onFocus={() => setFocusedField('confirmPassword')}
+                      onBlur={() => setFocusedField(null)}
+                      secureTextEntry={!showPassword}
+                    />
+                  </View>
+                  {validationErrors.confirmPassword && (
+                    <Text style={styles.errorMessage}>
+                      <X size={10} color="#dc2626" /> {validationErrors.confirmPassword}
+                    </Text>
+                  )}
+                </View>
 
-          {/* Security Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Shield size={12} color="#fff" />
+                {/* Terms Agreement */}
+                <View style={styles.termsContainer}>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => handleInputChange('agreeToTerms', !formData.agreeToTerms)}
+                  >
+                    <View style={[styles.checkboxBox, formData.agreeToTerms && styles.checkboxChecked]}>
+                      {formData.agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+                    </View>
+                  </TouchableOpacity>
+                  <Text style={styles.termsText}>
+                    I agree to the{' '}
+                    <Text style={styles.link} onPress={() => navigation.navigate('Terms' as never)}>
+                      Terms & Conditions
+                    </Text>{' '}
+                    and{' '}
+                    <Text style={styles.link} onPress={() => navigation.navigate('Privacy' as never)}>
+                      Privacy Policy
+                    </Text>
+                  </Text>
+                </View>
+                {validationErrors.agreeToTerms && (
+                  <Text style={styles.errorMessage}>
+                    <X size={10} color="#dc2626" /> {validationErrors.agreeToTerms}
+                  </Text>
+                )}
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  style={[styles.submitButton, (isLoading || isStoringReceipt) && styles.disabledButton]}
+                  onPress={handleSubmit}
+                  disabled={isLoading || isStoringReceipt}
+                >
+                  <LinearGradient
+                    colors={['#16a34a', '#15803d']}
+                    style={styles.submitGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    {isLoading || isStoringReceipt ? (
+                      <>
+                        <ActivityIndicator size="small" color="#fff" />
+                        <Text style={styles.submitText}>
+                          {isStoringReceipt ? 'Saving...' : 'Processing...'}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.submitText}>Create Account</Text>
+                        <ArrowRight size={18} color="#fff" />
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <View style={styles.divider}>
+                  <View style={styles.line} />
+                  <Text style={styles.dividerText}>Already have an account?</Text>
+                  <View style={styles.line} />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={() => navigation.navigate('Login' as never)}
+                >
+                  <Text style={styles.secondaryButtonText}>Sign In Instead</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.footerText}>Secure</Text>
             </View>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Building size={12} color="#fff" />
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Shield size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>Secure</Text>
               </View>
-              <Text style={styles.footerText}>Verified</Text>
-            </View>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Smartphone size={12} color="#fff" />
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Building size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>Verified</Text>
               </View>
-              <Text style={styles.footerText}>GJBC</Text>
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Smartphone size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>GJBC</Text>
+              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -535,7 +602,9 @@ export const SignUpScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+  },
+  gradient: {
+    flex: 1,
   },
   container: {
     flex: 1,
@@ -545,33 +614,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 24,
   },
+  circle: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.1,
+  },
+  circle1: {
+    width: 200,
+    height: 200,
+    backgroundColor: '#16a34a',
+    top: -50,
+    right: -50,
+  },
+  circle2: {
+    width: 150,
+    height: 150,
+    backgroundColor: '#16a34a',
+    bottom: 100,
+    left: -50,
+  },
+  circle3: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#16a34a',
+    top: '30%',
+    right: 20,
+  },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: 12,
+    borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#16a34a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     overflow: 'hidden',
+    boxShadow: '0 10px 25px -5px rgba(22, 163, 74, 0.2)',
   },
   logo: {
     width: '100%',
     height: '100%',
   },
   appName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '900',
     color: '#111827',
     marginBottom: 2,
@@ -583,50 +674,50 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
     fontWeight: '500',
     textAlign: 'center',
     maxWidth: 280,
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    padding: 24,
     marginBottom: 16,
-    padding: 16,
+    boxShadow: '0 20px 35px -10px rgba(22, 163, 74, 0.3)',
   },
-  errorContainer: {
+  messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef2f2',
-    borderWidth: 1,
-    borderColor: '#fee2e2',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 16,
     gap: 8,
   },
-  errorText: {
+  errorMessage: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  messageText: {
     flex: 1,
-    fontSize: 12,
-    color: '#991b1b',
+    fontSize: 13,
     fontWeight: '500',
   },
+  errorText: {
+    color: '#991b1b',
+  },
   form: {
-    gap: 16,
+    gap: 20,
   },
   row: {
     flexDirection: 'row',
@@ -636,11 +727,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputGroup: {
-    gap: 4,
+    gap: 6,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#374151',
     marginLeft: 4,
   },
@@ -651,38 +742,44 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#16a34a',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 8,
+    borderRadius: 14,
     backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    transition: 'border-color 0.2s',
+  },
+  inputWrapperFocused: {
+    borderColor: '#16a34a',
+    borderWidth: 2,
   },
   inputIcon: {
-    marginHorizontal: 10,
+    marginRight: 8,
   },
   input: {
     flex: 1,
-    height: 44,
-    fontSize: 14,
+    height: 48,
+    fontSize: 15,
     color: '#111827',
   },
   inputError: {
     borderColor: '#f87171',
   },
   errorMessage: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#dc2626',
     marginTop: 2,
     marginLeft: 4,
   },
   hint: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6b7280',
     marginTop: 2,
     marginLeft: 4,
@@ -691,8 +788,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
     borderWidth: 1,
     borderColor: '#bbf7d0',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 8,
   },
   infoTitle: {
@@ -741,12 +838,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 12,
-    gap: 12,
+    borderRadius: 16,
+    padding: 16,
+    gap: 16,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
   },
@@ -754,20 +851,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
     borderWidth: 1,
     borderColor: '#bbf7d0',
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 12,
+    padding: 10,
     alignItems: 'center',
   },
   feeText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#166534',
   },
   bankDetails: {
-    gap: 4,
+    gap: 6,
   },
   bankText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#374151',
   },
   link: {
@@ -780,13 +877,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 14,
+    padding: 14,
     backgroundColor: '#fff',
     gap: 8,
   },
   filePickerText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     flex: 1,
   },
@@ -795,7 +892,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   strengthLabel: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#6b7280',
   },
   strengthBar: {
@@ -811,18 +908,18 @@ const styles = StyleSheet.create({
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     marginTop: 4,
   },
   checkbox: {
     padding: 4,
   },
   checkboxBox: {
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     borderWidth: 2,
     borderColor: '#d1d5db',
-    borderRadius: 4,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -837,31 +934,33 @@ const styles = StyleSheet.create({
   },
   termsText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 13,
     color: '#374151',
   },
   submitButton: {
-    flexDirection: 'row',
-    backgroundColor: '#16a34a',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    borderRadius: 14,
+    overflow: 'hidden',
     marginTop: 8,
   },
+  submitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
   disabledButton: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   submitText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 16,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 16,
+    marginVertical: 20,
   },
   line: {
     flex: 1,
@@ -869,49 +968,52 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
   },
   dividerText: {
-    marginHorizontal: 8,
-    fontSize: 12,
+    marginHorizontal: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontWeight: '500',
   },
   secondaryButton: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
   secondaryButtonText: {
     color: '#374151',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 15,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 24,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 8,
+    gap: 32,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 50,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     marginTop: 8,
+    alignSelf: 'center',
+    backdropFilter: 'blur(10px)',
   },
   footerItem: {
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
   },
   footerIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: '#16a34a',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#4b5563',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

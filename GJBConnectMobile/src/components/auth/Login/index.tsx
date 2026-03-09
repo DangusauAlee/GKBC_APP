@@ -11,8 +11,8 @@ import {
   Image,
   SafeAreaView,
   StyleSheet,
-  Linking,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LoginStatusModal } from '../../shared/LoginStatusModal';
 import { useLoginForm } from './hooks';
@@ -29,7 +29,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Loader2,
   AlertCircle,
   CheckCircle,
   Shield,
@@ -55,6 +54,7 @@ export const LoginScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [loginStatus, setLoginStatus] = useState<'unverified' | 'banned' | 'no_account' | 'credentials_incorrect'>('credentials_incorrect');
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
 
   useEffect(() => {
     if (params?.message) {
@@ -177,137 +177,175 @@ export const LoginScreen: React.FC = () => {
         onForgotPassword={handleForgotPassword}
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
+      <LinearGradient
+        colors={['#f9fafb', '#f0fdf4']}
+        style={styles.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+        {/* Decorative circles */}
+        <View style={[styles.circle, styles.circle1]} />
+        <View style={[styles.circle, styles.circle2]} />
+        <View style={[styles.circle, styles.circle3]} />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../../../../assets/GJBCLOGO.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('../../../../assets/GJBCLOGO.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.appName}>GJBC</Text>
+              <Text style={styles.tagline}>Driving Economic Growth</Text>
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>Sign in to access your business network</Text>
             </View>
-            <Text style={styles.appName}>GJBC</Text>
-            <Text style={styles.tagline}>Driving Economic Growth</Text>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to access your business network</Text>
-          </View>
 
-          {/* Card */}
-          <View style={styles.card}>
-            {message && (
-              <View style={[styles.messageContainer, message.type === 'success' ? styles.successMessage : styles.errorMessage]}>
-                {message.type === 'success' ? (
-                  <CheckCircle size={16} color="#16a34a" />
-                ) : (
-                  <AlertCircle size={16} color="#dc2626" />
-                )}
-                <Text style={[styles.messageText, message.type === 'success' ? styles.successText : styles.errorText]}>
-                  {message.text}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.form}>
-              {/* Email */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email Address *</Text>
-                <View style={styles.inputWrapper}>
-                  <Mail size={16} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="your@email.com"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.email}
-                    onChangeText={(text) => handleInputChange('email', text)}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
+            {/* Card */}
+            <View style={styles.card}>
+              {message && (
+                <View style={[styles.messageContainer, message.type === 'success' ? styles.successMessage : styles.errorMessage]}>
+                  {message.type === 'success' ? (
+                    <CheckCircle size={16} color="#16a34a" />
+                  ) : (
+                    <AlertCircle size={16} color="#dc2626" />
+                  )}
+                  <Text style={[styles.messageText, message.type === 'success' ? styles.successText : styles.errorText]}>
+                    {message.text}
+                  </Text>
                 </View>
-              </View>
+              )}
 
-              {/* Password */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>Password *</Text>
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Text style={styles.toggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <View style={styles.form}>
+                {/* Email */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Email Address *</Text>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'email' && styles.inputWrapperFocused
+                  ]}>
+                    <Mail size={18} color="#16a34a" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="your@email.com"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.email}
+                      onChangeText={(text) => handleInputChange('email', text)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                  </View>
+                </View>
+
+                {/* Password */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Password *</Text>
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Text style={styles.toggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={[
+                    styles.inputWrapper,
+                    focusedField === 'password' && styles.inputWrapperFocused
+                  ]}>
+                    <Lock size={18} color="#16a34a" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.password}
+                      onChangeText={(text) => handleInputChange('password', text)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                      secureTextEntry={!showPassword}
+                    />
+                  </View>
+                </View>
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  style={[styles.submitButton, isLoading && styles.disabledButton]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <LinearGradient
+                    colors={['#16a34a', '#15803d']}
+                    style={styles.submitGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    {isLoading ? (
+                      <>
+                        <ActivityIndicator size="small" color="#fff" />
+                        <Text style={styles.submitText}>Signing In...</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.submitText}>Sign In</Text>
+                        <ArrowRight size={18} color="#fff" />
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <View style={styles.linksContainer}>
+                  <TouchableOpacity onPress={() => navigation.navigate('SignUp' as never)}>
+                    <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
+                    <Text style={styles.linkText}>Forgot your password?</Text>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.inputWrapper}>
-                  <Lock size={16} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your password"
-                    placeholderTextColor="#9ca3af"
-                    value={formData.password}
-                    onChangeText={(text) => handleInputChange('password', text)}
-                    secureTextEntry={!showPassword}
-                  />
-                </View>
               </View>
+            </View>
 
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[styles.submitButton, isLoading && styles.disabledButton]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <ActivityIndicator size="small" color="#fff" />
-                    <Text style={styles.submitText}>Signing In...</Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.submitText}>Sign In</Text>
-                    <ArrowRight size={16} color="#fff" />
-                  </>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.linksContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('SignUp' as never)}>
-                  <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
-                  <Text style={styles.linkText}>Forgot your password?</Text>
-                </TouchableOpacity>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Shield size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>Secure</Text>
+              </View>
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Building size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>Verified</Text>
+              </View>
+              <View style={styles.footerItem}>
+                <LinearGradient
+                  colors={['#16a34a', '#22c55e']}
+                  style={styles.footerIcon}
+                >
+                  <Smartphone size={12} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.footerText}>GJBC</Text>
               </View>
             </View>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Shield size={12} color="#fff" />
-              </View>
-              <Text style={styles.footerText}>Secure</Text>
-            </View>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Building size={12} color="#fff" />
-              </View>
-              <Text style={styles.footerText}>Verified</Text>
-            </View>
-            <View style={styles.footerItem}>
-              <View style={styles.footerIcon}>
-                <Smartphone size={12} color="#fff" />
-              </View>
-              <Text style={styles.footerText}>GJBC</Text>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -315,7 +353,9 @@ export const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+  },
+  gradient: {
+    flex: 1,
   },
   container: {
     flex: 1,
@@ -325,33 +365,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 24,
   },
+  circle: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.1,
+  },
+  circle1: {
+    width: 200,
+    height: 200,
+    backgroundColor: '#16a34a',
+    top: -50,
+    right: -50,
+  },
+  circle2: {
+    width: 150,
+    height: 150,
+    backgroundColor: '#16a34a',
+    bottom: 100,
+    left: -50,
+  },
+  circle3: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#16a34a',
+    top: '30%',
+    right: 20,
+  },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: 12,
+    borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#16a34a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     overflow: 'hidden',
+    boxShadow: '0 10px 25px -5px rgba(22, 163, 74, 0.2)',
   },
   logo: {
     width: '100%',
     height: '100%',
   },
   appName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '900',
     color: '#111827',
     marginBottom: 2,
@@ -363,35 +425,31 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
     fontWeight: '500',
     textAlign: 'center',
     maxWidth: 280,
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    padding: 24,
     marginBottom: 16,
-    padding: 16,
+    boxShadow: '0 20px 35px -10px rgba(22, 163, 74, 0.3)',
   },
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 16,
     gap: 8,
@@ -408,7 +466,7 @@ const styles = StyleSheet.create({
   },
   messageText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
   },
   successText: {
@@ -418,14 +476,14 @@ const styles = StyleSheet.create({
     color: '#991b1b',
   },
   form: {
-    gap: 16,
+    gap: 20,
   },
   inputGroup: {
-    gap: 4,
+    gap: 6,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#374151',
     marginLeft: 4,
   },
@@ -436,81 +494,91 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#16a34a',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 8,
+    borderRadius: 14,
     backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    transition: 'border-color 0.2s',
+  },
+  inputWrapperFocused: {
+    borderColor: '#16a34a',
+    borderWidth: 2,
   },
   inputIcon: {
-    marginHorizontal: 10,
+    marginRight: 8,
   },
   input: {
     flex: 1,
-    height: 44,
-    fontSize: 14,
+    height: 48,
+    fontSize: 15,
     color: '#111827',
   },
   submitButton: {
-    flexDirection: 'row',
-    backgroundColor: '#16a34a',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    borderRadius: 14,
+    overflow: 'hidden',
     marginTop: 8,
   },
+  submitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
   disabledButton: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   submitText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 16,
   },
   linksContainer: {
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
     marginTop: 16,
   },
   linkText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#16a34a',
     fontWeight: '500',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 24,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 8,
+    gap: 32,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 50,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     marginTop: 8,
+    alignSelf: 'center',
+    backdropFilter: 'blur(10px)',
   },
   footerItem: {
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
   },
   footerIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: '#16a34a',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#4b5563',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

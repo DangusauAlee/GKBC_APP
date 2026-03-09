@@ -8,7 +8,10 @@ export const checkProfileExists = async (email: string): Promise<boolean> => {
     .select('email')
     .eq('email', email.toLowerCase())
     .maybeSingle();
-  if (error) return false;
+  if (error) {
+    console.error('checkProfileExists error:', error);
+    return false;
+  }
   return !!data;
 };
 
@@ -54,17 +57,22 @@ export const processPendingVerification = async (userId: string) => {
     const newFileName = `receipt-${userId}-${Date.now()}.${fileExt}`;
     const filePath = `${userId}/${newFileName}`;
 
+    console.log('Uploading to storage:', filePath);
     const { error: uploadError } = await supabase.storage
       .from('verification-receipts')
       .upload(filePath, fileUri);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
 
     const { data: urlData } = supabase.storage
       .from('verification-receipts')
       .getPublicUrl(filePath);
     const receiptUrl = urlData.publicUrl;
 
+    console.log('Inserting verification request with receipt URL:', receiptUrl);
     const { error: insertError } = await supabase
       .from('verified_user_requests')
       .insert({
@@ -74,13 +82,19 @@ export const processPendingVerification = async (userId: string) => {
         created_at: new Date().toISOString(),
       });
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('DB insert error:', insertError);
+      throw new Error(`Insert failed: ${insertError.message}`);
+    }
 
     await AsyncStorage.removeItem('pendingVerification');
     return { success: true, message: 'Verification request submitted' };
   } catch (error) {
     console.error('Pending verification processing failed:', error);
-    return { success: false, message: 'Failed to process verification' };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to process verification',
+    };
   }
 };
 

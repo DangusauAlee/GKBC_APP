@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabase';
 import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const checkUserExists = async (email: string): Promise<boolean> => {
   const { data, error } = await supabase
@@ -10,7 +11,7 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
 
   if (error) {
     console.error('checkUserExists error:', error);
-    return false; // assume not exists on error
+    return false;
   }
   return !!data;
 };
@@ -35,24 +36,15 @@ export const createNewUser = async (
   });
 
   if (error) throw error;
-
-  // Insert into profiles table (trigger should handle this, but ensure)
-  if (data.user) {
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: data.user.id,
-      email: email.toLowerCase(),
-      first_name: firstName,
-      last_name: lastName,
-      phone: phone,
-      user_status: 'active',
-    });
-    if (profileError) console.error('Profile upsert error:', profileError);
-  }
-
-  return data;
+  return data; // profile will be created by database trigger
 };
 
-export const storePendingVerification = async (userId: string, fileUri: string, fileName: string, fileType: string): Promise<void> => {
+export const storePendingVerification = async (
+  userId: string,
+  fileUri: string,
+  fileName: string,
+  fileType: string
+): Promise<void> => {
   try {
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(fileUri, {
@@ -71,6 +63,3 @@ export const storePendingVerification = async (userId: string, fileUri: string, 
     throw new Error('Failed to store receipt locally.');
   }
 };
-
-// We'll need AsyncStorage – will import later
-import AsyncStorage from '@react-native-async-storage/async-storage';
