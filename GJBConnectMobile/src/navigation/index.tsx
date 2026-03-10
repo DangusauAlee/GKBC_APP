@@ -7,9 +7,7 @@ import { ResetPasswordScreen } from '../components/auth/ResetPassword';
 import { TermsScreen } from '../components/static/Terms';
 import { PrivacyScreen } from '../components/static/Privacy';
 import { BottomTabNavigator } from './BottomTabNavigator';
-
-// Placeholder for Profile screen
-const ProfileScreen = () => null;
+import { BusinessDetailsScreen } from '../screens/BusinessDetails';
 
 export type RootStackParamList = {
   Login: { prefilledEmail?: string; message?: string; messageType?: 'success' | 'error' } | undefined;
@@ -19,7 +17,7 @@ export type RootStackParamList = {
   ResetPassword: undefined;
   Terms: undefined;
   Privacy: undefined;
-  Profile: { userId: string };
+  BusinessDetails: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,7 +33,7 @@ export function AppNavigator() {
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Privacy" component={PrivacyScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="BusinessDetails" component={BusinessDetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

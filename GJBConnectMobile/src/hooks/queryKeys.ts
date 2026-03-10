@@ -23,3 +23,14 @@ export const commentKeys = {
   list: (postId: string) => [...commentKeys.all, 'list', postId] as const,
   detail: (id: string) => [...commentKeys.all, 'detail', id] as const,
 };
+
+export const businessKeys = {
+  all: ['businesses'] as const,
+  lists: () => [...businessKeys.all, 'list'] as const,
+  list: (filters: Record<string, any>) => [...businessKeys.lists(), filters] as const,
+  details: () => [...businessKeys.all, 'detail'] as const,
+  detail: (id: string) => [...businessKeys.details(), id] as const,
+  categories: () => [...businessKeys.all, 'categories'] as const,
+  locationCounts: () => [...businessKeys.all, 'locationCounts'] as const,
+  userStatus: () => [...businessKeys.all, 'userStatus'] as const,
+};

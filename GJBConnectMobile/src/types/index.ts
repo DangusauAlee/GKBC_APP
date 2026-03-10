@@ -49,3 +49,4 @@ export interface Comment {
 export interface LikersPreview {
   name: string;
 }
+export * from './business';
