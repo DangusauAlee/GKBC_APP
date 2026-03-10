@@ -1,0 +1,113 @@
+.
+├── assets
+│   ├── GJBCLOGO.png
+│   ├── android-icon-background.png
+│   ├── android-icon-foreground.png
+│   ├── android-icon-monochrome.png
+│   ├── favicon.png
+│   ├── icon.png
+│   └── splash-icon.png
+├── src
+│   ├── components
+│   │   ├── CustomTabBar
+│   │   │   └── index.tsx
+│   │   ├── auth
+│   │   │   ├── ForgotPassword
+│   │   │   │   ├── hooks.ts
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── services.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── Login
+│   │   │   │   ├── hooks.ts
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── services.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── ResetPassword
+│   │   │   │   ├── hooks.ts
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── services.ts
+│   │   │   │   └── types.ts
+│   │   │   └── SignUp
+│   │   │       ├── hooks.ts
+│   │   │       ├── index.tsx
+│   │   │       ├── services.ts
+│   │   │       └── types.ts
+│   │   ├── feed
+│   │   │   ├── CreatePostModal
+│   │   │   │   └── index.tsx
+│   │   │   └── PostCard
+│   │   │       ├── hooks.ts
+│   │   │       ├── index.tsx
+│   │   │       └── types.ts
+│   │   ├── members
+│   │   │   ├── ConnectionsTab
+│   │   │   │   └── index.tsx
+│   │   │   └── MemberCard
+│   │   │       └── index.tsx
+│   │   ├── shared
+│   │   │   ├── ConfirmationDialog
+│   │   │   │   └── index.tsx
+│   │   │   ├── FeedbackToast
+│   │   │   │   └── index.tsx
+│   │   │   ├── LoginStatusModal
+│   │   │   │   └── index.tsx
+│   │   │   ├── StatusModal
+│   │   │   │   └── index.tsx
+│   │   │   └── VerifiedBadge
+│   │   │       └── index.tsx
+│   │   └── static
+│   │       ├── Privacy
+│   │       │   └── index.tsx
+│   │       └── Terms
+│   │           ├── index.tsx
+│   │           └── types.ts
+│   ├── context
+│   │   └── AppContext.tsx
+│   ├── hooks
+│   │   ├── queryKeys.ts
+│   │   ├── useComments.ts
+│   │   ├── useConnectionMutations.ts
+│   │   ├── useConnectionsData.ts
+│   │   ├── useFeed.ts
+│   │   └── useLikeShare.ts
+│   ├── lib
+│   │   ├── queryClient.ts
+│   │   └── supabase.ts
+│   ├── navigation
+│   │   ├── BottomTabNavigator.tsx
+│   │   ├── CustomTabBar.tsx
+│   │   └── index.tsx
+│   ├── screens
+│   │   ├── Businesses
+│   │   │   └── index.tsx
+│   │   ├── Explore
+│   │   │   └── index.tsx
+│   │   ├── Home
+│   │   │   └── index.tsx
+│   │   ├── Marketplace
+│   │   │   └── index.tsx
+│   │   └── Members
+│   │       └── index.tsx
+│   ├── services
+│   │   ├── supabase
+│   │   │   └── feed.ts
+│   │   └── connections.ts
+│   ├── store
+│   │   └── authStore.ts
+│   ├── types
+│   │   ├── index.ts
+│   │   └── member.ts
+│   └── utils
+│       └── formatters.ts
+├── .env
+├── .gitignore
+├── App.tsx
+├── app.json
+├── babel.config.js
+├── index.ts
+├── package-lock.json
+├── package.json
+├── project_structure.txt
+└── tsconfig.json
+
+40 directories, 71 files
