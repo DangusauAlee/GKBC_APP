@@ -50,3 +50,12 @@ export const jobKeys = {
   details: () => [...jobKeys.all, 'detail'] as const,
   detail: (id: string) => [...jobKeys.details(), id] as const,
 };
+
+export const marketplaceKeys = {
+  all: ['marketplace'] as const,
+  listings: () => [...marketplaceKeys.all, 'list'] as const,
+  listingsWithFilters: (filters: any) => [...marketplaceKeys.listings(), filters] as const,
+  myListings: () => [...marketplaceKeys.all, 'myListings'] as const,
+  detail: (id: string) => [...marketplaceKeys.all, 'detail', id] as const,
+  reviews: (id: string) => [...marketplaceKeys.all, 'reviews', id] as const,
+};

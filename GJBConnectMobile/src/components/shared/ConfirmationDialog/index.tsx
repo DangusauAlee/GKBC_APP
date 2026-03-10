@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface ConfirmationDialogProps {
@@ -10,6 +10,7 @@ interface ConfirmationDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   isDanger?: boolean;
+  isLoading?: boolean;
 }
 
 export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -20,6 +21,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   onConfirm,
   onCancel,
   isDanger = false,
+  isLoading = false,
 }) => {
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -28,15 +30,27 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onCancel}
+              disabled={isLoading}
+            >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.confirmButton, isDanger && styles.dangerButton]} onPress={onConfirm}>
+            <TouchableOpacity
+              style={[styles.confirmButton, isDanger && styles.dangerButton]}
+              onPress={onConfirm}
+              disabled={isLoading}
+            >
               <LinearGradient
                 colors={isDanger ? ['#ef4444', '#dc2626'] : ['#16a34a', '#15803d']}
                 style={styles.confirmGradient}
               >
-                <Text style={styles.confirmText}>{confirmText}</Text>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.confirmText}>{confirmText}</Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           </View>

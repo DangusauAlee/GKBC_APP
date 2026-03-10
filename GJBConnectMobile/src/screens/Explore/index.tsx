@@ -37,8 +37,8 @@ export const ExploreScreen: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'job' | 'event'; id: string } | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  const { user } = useAuthStore();
-  const isVerified = user?.user_status === 'verified';
+ const { user, profile } = useAuthStore();
+ const isVerified = profile?.user_status === 'verified';
 
   // Debounce search
   useEffect(() => {
@@ -322,16 +322,17 @@ export const ExploreScreen: React.FC = () => {
         )}
 
         {deleteConfirm && (
-          <ConfirmationDialog
-            visible={true}
-            title={`Delete ${deleteConfirm.type === 'job' ? 'Job' : 'Event'}`}
-            message={`Are you sure you want to delete this ${deleteConfirm.type}? This action cannot be undone.`}
-            confirmText="Delete"
-            onConfirm={deleteConfirm.type === 'job' ? handleDeleteJob : handleDeleteEvent}
-            onCancel={() => setDeleteConfirm(null)}
-            isDanger={true}
-          />
-        )}
+  <ConfirmationDialog
+    visible={true}
+    title={`Delete ${deleteConfirm.type === 'job' ? 'Job' : 'Event'}`}
+    message={`Are you sure you want to delete this ${deleteConfirm.type}? This action cannot be undone.`}
+    confirmText="Delete"
+    onConfirm={deleteConfirm.type === 'job' ? handleDeleteJob : handleDeleteEvent}
+    onCancel={() => setDeleteConfirm(null)}
+    isDanger={true}
+    isLoading={deleteConfirm.type === 'job' ? jobDeleting : eventDeleting}
+  />
+)}
 
         <FeedbackToast
           visible={!!feedback}

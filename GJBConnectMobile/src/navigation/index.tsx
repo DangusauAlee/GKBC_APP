@@ -8,6 +8,8 @@ import { TermsScreen } from '../components/static/Terms';
 import { PrivacyScreen } from '../components/static/Privacy';
 import { BottomTabNavigator } from './BottomTabNavigator';
 import { BusinessDetailsScreen } from '../screens/BusinessDetails';
+import { MarketplaceDetailScreen } from '../screens/MarketplaceDetail';
+import { MarketplaceEditScreen } from '../screens/MarketplaceEdit';
 
 export type RootStackParamList = {
   Login: { prefilledEmail?: string; message?: string; messageType?: 'success' | 'error' } | undefined;
@@ -18,6 +20,8 @@ export type RootStackParamList = {
   Terms: undefined;
   Privacy: undefined;
   BusinessDetails: { id: string };
+  MarketplaceDetail: { id: string };
+  MarketplaceEdit: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -34,6 +38,8 @@ export function AppNavigator() {
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Privacy" component={PrivacyScreen} />
         <Stack.Screen name="BusinessDetails" component={BusinessDetailsScreen} />
+        <Stack.Screen name="MarketplaceDetail" component={MarketplaceDetailScreen} />
+        <Stack.Screen name="MarketplaceEdit" component={MarketplaceEditScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

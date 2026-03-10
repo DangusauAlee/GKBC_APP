@@ -106,4 +106,37 @@ export interface EventFilters {
 export interface LikersPreview {
   name: string;
 }
+
+export interface MarketplaceListing {
+  id: string;
+  seller_id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  condition: 'new' | 'used' | 'refurbished';
+  location: string;
+  images: string[];
+  views_count: number;
+  is_sold: boolean;
+  created_at: string;
+  seller_name: string;
+  seller_avatar: string | null;
+  seller_verified: boolean;
+  is_favorited: boolean;
+  favorite_count: number;
+}
+
+export interface MarketplaceReview {
+  id: string;
+  listing_id: string;
+  reviewer_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reviewer_name?: string;
+  reviewer_avatar?: string | null;
+  reviewer_verified?: boolean;
+}
+
 export * from './business';
