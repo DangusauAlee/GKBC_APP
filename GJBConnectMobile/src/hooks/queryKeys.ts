@@ -34,3 +34,19 @@ export const businessKeys = {
   locationCounts: () => [...businessKeys.all, 'locationCounts'] as const,
   userStatus: () => [...businessKeys.all, 'userStatus'] as const,
 };
+
+export const eventKeys = {
+  all: ['events'] as const,
+  lists: () => [...eventKeys.all, 'list'] as const,
+  list: (filters: any) => [...eventKeys.lists(), filters] as const,
+  details: () => [...eventKeys.all, 'detail'] as const,
+  detail: (id: string) => [...eventKeys.details(), id] as const,
+};
+
+export const jobKeys = {
+  all: ['jobs'] as const,
+  lists: () => [...jobKeys.all, 'list'] as const,
+  list: (filters: any) => [...jobKeys.lists(), filters] as const,
+  details: () => [...jobKeys.all, 'detail'] as const,
+  detail: (id: string) => [...jobKeys.details(), id] as const,
+};
