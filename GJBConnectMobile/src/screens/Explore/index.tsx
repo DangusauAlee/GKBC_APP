@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Filter, Plus, Briefcase, Calendar, AlertCircle } from 'lucide-react-native';
+import { Search, Filter, Plus, Briefcase, Calendar } from 'lucide-react-native';
 import { useJobs } from '../../hooks/useJobs';
 import { useEvents } from '../../hooks/useEvents';
 import { useAuthStore } from '../../store/authStore';
@@ -23,6 +23,7 @@ import { EditJobModal } from '../../components/explore/EditJobModal';
 import { EditEventModal } from '../../components/explore/EditEventModal';
 import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
+import { AppHeader } from '../../components/AppHeader';
 import type { Job, Event } from '../../types';
 
 export const ExploreScreen: React.FC = () => {
@@ -37,8 +38,8 @@ export const ExploreScreen: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'job' | 'event'; id: string } | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
- const { user, profile } = useAuthStore();
- const isVerified = profile?.user_status === 'verified';
+  const { user, profile } = useAuthStore();
+  const isVerified = profile?.user_status === 'verified';
 
   // Debounce search
   useEffect(() => {
@@ -266,10 +267,7 @@ export const ExploreScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Explore</Text>
-          <Text style={styles.headerSubtitle}>Find jobs and events in GJBC community</Text>
-        </View>
+        <AppHeader title="Explore" />
 
         {/* Search and tabs outside FlatList */}
         {renderHeader()}
@@ -322,17 +320,17 @@ export const ExploreScreen: React.FC = () => {
         )}
 
         {deleteConfirm && (
-  <ConfirmationDialog
-    visible={true}
-    title={`Delete ${deleteConfirm.type === 'job' ? 'Job' : 'Event'}`}
-    message={`Are you sure you want to delete this ${deleteConfirm.type}? This action cannot be undone.`}
-    confirmText="Delete"
-    onConfirm={deleteConfirm.type === 'job' ? handleDeleteJob : handleDeleteEvent}
-    onCancel={() => setDeleteConfirm(null)}
-    isDanger={true}
-    isLoading={deleteConfirm.type === 'job' ? jobDeleting : eventDeleting}
-  />
-)}
+          <ConfirmationDialog
+            visible={true}
+            title={`Delete ${deleteConfirm.type === 'job' ? 'Job' : 'Event'}`}
+            message={`Are you sure you want to delete this ${deleteConfirm.type}? This action cannot be undone.`}
+            confirmText="Delete"
+            onConfirm={deleteConfirm.type === 'job' ? handleDeleteJob : handleDeleteEvent}
+            onCancel={() => setDeleteConfirm(null)}
+            isDanger={true}
+            isLoading={deleteConfirm.type === 'job' ? jobDeleting : eventDeleting}
+          />
+        )}
 
         <FeedbackToast
           visible={!!feedback}
@@ -373,21 +371,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#16a34a',
     top: '30%',
     right: 20,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
   },
   listHeader: {
     paddingHorizontal: 16,

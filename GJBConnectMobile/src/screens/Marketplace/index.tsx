@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Search,
@@ -27,6 +28,9 @@ import { MarketplaceListingCard } from '../../components/marketplace/Marketplace
 import { CreateListingModal } from '../../components/marketplace/CreateListingModal';
 import { FiltersPanel } from '../../components/marketplace/FiltersPanel';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
+import { AppHeader } from '../../components/AppHeader';
+import type { MarketplaceListing } from '../../types';
+import type { RootStackParamList } from '../../navigation';
 
 const CATEGORIES = ['Electronics', 'Fashion', 'Vehicles', 'Property', 'Services', 'Others'];
 const CONDITIONS = [
@@ -36,8 +40,10 @@ const CONDITIONS = [
   { value: 'refurbished', label: 'Refurbished' },
 ];
 
+type MarketplaceScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export const MarketplaceScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<MarketplaceScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuthStore();
 
@@ -204,7 +210,7 @@ export const MarketplaceScreen: React.FC = () => {
     </View>
   );
 
-  const renderItem = useCallback(({ item }: { item: any }) => (
+  const renderItem = useCallback(({ item }: { item: MarketplaceListing }) => (
     <MarketplaceListingCard
       listing={item}
       onPress={() => navigation.navigate('MarketplaceDetail', { id: item.id })}
@@ -266,21 +272,7 @@ export const MarketplaceScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>Marketplace</Text>
-            <Text style={styles.headerSubtitle}>GJBC community marketplace</Text>
-          </View>
-          {user && (
-            <View style={[styles.verifiedBadge, isVerified ? styles.verified : styles.member]}>
-              <Shield size={10} color={isVerified ? '#fff' : '#fbbf24'} />
-              <Text style={[styles.verifiedText, isVerified ? styles.verifiedTextActive : styles.memberText]}>
-                {isVerified ? 'Verified' : 'Member'}
-              </Text>
-            </View>
-          )}
-        </View>
+        <AppHeader title="Marketplace" />
 
         {/* Search and filters (outside FlatList) */}
         {activeTab === 'browse' && renderHeader()}
@@ -387,48 +379,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#16a34a',
     top: '30%',
     right: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 16,
-    gap: 4,
-  },
-  verified: {
-    backgroundColor: '#16a34a',
-  },
-  member: {
-    backgroundColor: '#fbbf24',
-  },
-  verifiedText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  verifiedTextActive: {
-    color: '#fff',
-  },
-  memberText: {
-    color: '#854d0e',
   },
   listHeader: {
     paddingHorizontal: 16,

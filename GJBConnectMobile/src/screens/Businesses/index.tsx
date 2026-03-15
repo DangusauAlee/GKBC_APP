@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Search,
@@ -29,9 +30,14 @@ import { BusinessCard } from '../../components/business/BusinessCard';
 import { CreateBusinessModal } from '../../components/business/CreateBusinessModal';
 import { useAuthStore } from '../../store/authStore';
 import { LOCATION_AXIS } from '../../types/business';
+import { AppHeader } from '../../components/AppHeader';
+import type { Business } from '../../types/business';
+import type { RootStackParamList } from '../../navigation';
+
+type BusinessesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const BusinessesScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<BusinessesScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
 
@@ -97,15 +103,15 @@ export const BusinessesScreen: React.FC = () => {
     return count;
   }, [selectedType, selectedLocation, search]);
 
-  const handleProfileClick = (businessId: string) => {
+  const handleBusinessClick = (businessId: string) => {
     navigation.navigate('BusinessDetails', { id: businessId });
   };
 
-  const renderItem = useCallback(({ item }) => (
-    <BusinessCard business={item} onPress={() => handleProfileClick(item.id)} />
+  const renderItem = useCallback(({ item }: { item: Business }) => (
+    <BusinessCard business={item} onPress={() => handleBusinessClick(item.id)} />
   ), []);
 
-  const keyExtractor = useCallback((item) => item.id, []);
+  const keyExtractor = useCallback((item: Business) => item.id, []);
 
   const renderHeader = () => (
     <View style={styles.listHeader}>
@@ -249,6 +255,7 @@ export const BusinessesScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
+          <AppHeader title="Business Directory" />
           <View style={styles.initialLoading}>
             <ActivityIndicator size="large" color="#16a34a" />
           </View>
@@ -264,10 +271,7 @@ export const BusinessesScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>GJBC Business Directory</Text>
-          <Text style={styles.headerSubtitle}>Find reliable and trusted businesses</Text>
-        </View>
+        <AppHeader title="Business Directory" />
 
         {/* Search and filters outside FlatList */}
         <View style={styles.searchWrapper}>
@@ -293,7 +297,7 @@ export const BusinessesScreen: React.FC = () => {
           renderItem={renderItem}
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={renderFooter}
-          onEndReached={hasNextPage ? fetchNextPage : undefined}
+          onEndReached={hasNextPage ? () => fetchNextPage() : undefined}
           onEndReachedThreshold={0.5}
           contentContainerStyle={[
             styles.listContent,
@@ -352,21 +356,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#16a34a',
     top: '30%',
     right: 20,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
   },
   searchWrapper: {
     paddingHorizontal: 16,

@@ -59,3 +59,18 @@ export const marketplaceKeys = {
   detail: (id: string) => [...marketplaceKeys.all, 'detail', id] as const,
   reviews: (id: string) => [...marketplaceKeys.all, 'reviews', id] as const,
 };
+
+export const messagingKeys = {
+  all: ['messaging'] as const,
+  conversations: () => [...messagingKeys.all, 'conversations'] as const,
+  conversationsWithContext: (context?: string) => [...messagingKeys.conversations(), { context }] as const,
+  messages: (conversationId: string) => [...messagingKeys.all, 'messages', conversationId] as const,
+  unreadCounts: () => [...messagingKeys.all, 'unreadCounts'] as const,
+};
+
+export const supportKeys = {
+  all: ['support'] as const,
+  tickets: () => [...supportKeys.all, 'tickets'] as const,
+  ticket: (id: string) => [...supportKeys.tickets(), id] as const,
+  replies: (ticketId: string) => [...supportKeys.all, 'replies', ticketId] as const,
+};

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Search,
@@ -33,6 +34,9 @@ import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
 import { formatTimeAgo } from '../../utils/formatters';
 import { useAuthStore } from '../../store/authStore';
+import { AppHeader } from '../../components/AppHeader';
+import type { RootStackParamList } from '../../navigation';
+import type { Member } from '../../types/member';
 
 const marketAreas = [
   'Central / Old City',
@@ -52,8 +56,10 @@ const marketAreas = [
   'Others',
 ];
 
+type MembersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export const MembersScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<MembersScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
 
@@ -93,7 +99,7 @@ export const MembersScreen: React.FC = () => {
     isFetchingNextPage,
     isLoading,
     isFetching,
-  } = useConnectionsData(search, businessType, marketArea, hasFilters);
+  } = useConnectionsData(search, businessType, marketArea); // Removed fourth argument
 
   const mutations = useConnectionMutations(search, businessType, marketArea);
 
@@ -357,6 +363,7 @@ export const MembersScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
+          <AppHeader title="Members" />
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#16a34a" />
           </View>
@@ -372,10 +379,7 @@ export const MembersScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>GJBC Members Directory</Text>
-          <Text style={styles.headerSubtitle}>Connect with business professionals</Text>
-        </View>
+        <AppHeader title="Members" />
 
         <View style={styles.tabContainer}>
           <TouchableOpacity
@@ -440,7 +444,7 @@ export const MembersScreen: React.FC = () => {
                     </View>
                   )
                 }
-                onEndReached={hasNextPage ? fetchNextPage : undefined}
+                onEndReached={hasNextPage ? () => fetchNextPage() : undefined}
                 onEndReachedThreshold={0.5}
                 ListFooterComponent={
                   isFetchingNextPage ? (
@@ -451,7 +455,7 @@ export const MembersScreen: React.FC = () => {
                 }
                 contentContainerStyle={[
                   styles.listContent,
-                  { paddingBottom: insets.bottom + 80 } // Add bottom padding for tab bar
+                  { paddingBottom: insets.bottom + 80 }
                 ]}
                 keyboardShouldPersistTaps="handled"
               />

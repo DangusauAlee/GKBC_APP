@@ -9,6 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  ViewToken,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,7 +19,9 @@ import { feedKeys } from '../../hooks/queryKeys';
 import { useAuthStore } from '../../store/authStore';
 import { PostCard } from '../../components/feed/PostCard';
 import { CreatePostModal } from '../../components/feed/CreatePostModal';
+import { AppHeader } from '../../components/AppHeader';
 import { Plus } from 'lucide-react-native';
+import type { Post } from '../../types';
 
 export const HomeScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -47,11 +50,11 @@ export const HomeScreen: React.FC = () => {
     []
   );
 
-  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     const visibleVideo = viewableItems.find(
-      (item) => item.item.media_type === 'video'
+      (item) => (item.item as Post).media_type === 'video'
     );
-    setPlayingVideoId(visibleVideo ? visibleVideo.item.id : null);
+    setPlayingVideoId(visibleVideo ? (visibleVideo.item as Post).id : null);
   }, []);
 
   const viewabilityConfigCallbackPairs = useRef([
@@ -66,10 +69,8 @@ export const HomeScreen: React.FC = () => {
 
   const handlePostCreated = async (postId: string) => {
     try {
-      // Fetch the newly created post
       const newPost = await feedService.getPostById(postId, user!.id);
 
-      // Insert it at the beginning of the first page in the cache
       queryClient.setQueryData(feedKeys.lists(), (oldData: any) => {
         if (!oldData) return oldData;
         return {
@@ -81,20 +82,15 @@ export const HomeScreen: React.FC = () => {
         };
       });
 
-      // Scroll to top to show the new post
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-
-      // Do NOT refetch automatically – let the user pull to refresh if they want
-      // This keeps the new post at the top until manual refresh
     } catch (error) {
       console.error('Failed to fetch new post', error);
-      // Fallback: just refetch
       refetch();
     }
   };
 
   const renderItem = useCallback(
-    ({ item }) => (
+    ({ item }: { item: Post }) => (
       <PostCard
         post={item}
         isVisible={item.id === playingVideoId}
@@ -104,7 +100,7 @@ export const HomeScreen: React.FC = () => {
     [playingVideoId]
   );
 
-  const keyExtractor = (item) => item.id;
+  const keyExtractor = (item: Post) => item.id;
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -167,6 +163,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
+        <AppHeader />
         <FlatList
           ref={flatListRef}
           data={posts}

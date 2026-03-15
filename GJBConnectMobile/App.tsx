@@ -6,6 +6,7 @@ import { AppNavigator } from './src/navigation';
 import { queryClient } from './src/lib/queryClient';
 import { useAuthStore } from './src/store/authStore';
 import { AppProvider } from './src/context/AppContext';
+import { UnreadProvider } from './src/contexts/UnreadContext';
 
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -19,7 +20,9 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AppProvider>
-            <AppNavigator />
+            <UnreadProvider>
+              <AppNavigator />
+            </UnreadProvider>
           </AppProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

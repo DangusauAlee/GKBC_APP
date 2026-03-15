@@ -1,51 +1,57 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
-  Animated,
   Dimensions,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Home, Users, Store, Building2, Compass } from 'lucide-react-native';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  useSharedValue,
+  withSequence,
+} from 'react-native-reanimated';
+import {
+  Home,
+  Users,
+  Store,
+  Building2,
+  Compass,
+} from 'lucide-react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const { width } = Dimensions.get('window');
-const TAB_WIDTH = width / 5;
+const TAB_WIDTH = width / 5; // 5 tabs
 
-interface CustomTabBarProps {
-  state: any;
-  descriptors: any;
-  navigation: any;
-}
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-export const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigation }) => {
+// Map route names to icon components
+const icons: Record<string, React.ComponentType<any>> = {
+  Home,
+  Members: Users,
+  Marketplace: Store,
+  Businesses: Building2,
+  Explore: Compass,
+};
+
+export const CustomTabBar: React.FC<BottomTabBarProps> = ({
+  state,
+  descriptors,
+  navigation,
+}) => {
   const insets = useSafeAreaInsets();
-  const animatedValues = useRef(state.routes.map(() => new Animated.Value(1))).current;
+  const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : 0);
 
-  const icons = [
-    { name: 'Home', Icon: Home },
-    { name: 'Members', Icon: Users },
-    { name: 'Marketplace', Icon: Store },
-    { name: 'Businesses', Icon: Building2 },
-    { name: 'Explore', Icon: Compass },
-  ];
+  // Shared values for each tab's scale
+  const scales = useRef(state.routes.map(() => useSharedValue(1))).current;
 
-  useEffect(() => {
-    // Animate active tab
-    state.routes.forEach((_: any, index: number) => {
-      Animated.spring(animatedValues[index], {
-        toValue: index === state.index ? 1.2 : 1,
-        friction: 3,
-        useNativeDriver: true,
-      }).start();
-    });
-  }, [state.index]);
-
-  const handlePress = (routeName: string, isFocused: boolean) => {
+  const handlePress = (routeName: string, isFocused: boolean, index: number) => {
     const event = navigation.emit({
       type: 'tabPress',
       target: routeName,
@@ -55,52 +61,78 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, 
     if (!isFocused && !event.defaultPrevented) {
       navigation.navigate(routeName);
     }
+
+    // Animate the pressed tab
+    scales[index].value = withSequence(
+      withSpring(0.9, { damping: 1, stiffness: 150 }),
+      withSpring(1.2, { damping: 2, stiffness: 150 }),
+      withSpring(1, { damping: 1, stiffness: 150 })
+    );
+  };
+
+  const handleLongPress = (routeName: string) => {
+    navigation.emit({
+      type: 'tabLongPress',
+      target: routeName,
+    });
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFillObject} />
-      <LinearGradient
-        colors={['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.9)']}
-        style={styles.gradient}
-      />
+    <BlurView
+      intensity={80}
+      tint="light"
+      style={[
+        styles.container,
+        {
+          height: tabBarHeight,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
+      <View style={styles.tabBar}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const isFocused = state.index === index;
 
-      {state.routes.map((route: any, index: number) => {
-        const { options } = descriptors[route.key];
-        const label = options.tabBarLabel !== undefined
-          ? options.tabBarLabel
-          : options.title !== undefined
-          ? options.title
-          : route.name;
+          // Get icon component with fallback to Home
+          const IconComponent = icons[route.name] || Home;
 
-        const isFocused = state.index === index;
-        const { Icon } = icons[index];
-        const scale = animatedValues[index];
+          const animatedStyle = useAnimatedStyle(() => ({
+            transform: [{ scale: scales[index].value }],
+          }));
 
-        return (
-          <TouchableOpacity
-            key={route.key}
-            onPress={() => handlePress(route.name, isFocused)}
-            style={styles.tab}
-            activeOpacity={0.7}
-          >
-            <Animated.View style={[styles.iconContainer, { transform: [{ scale }] }]}>
-              {/* Semi‑transparent green background for active tab */}
-              {isFocused && (
-                <LinearGradient
-                  colors={['rgba(22, 163, 74, 0.2)', 'rgba(21, 128, 61, 0.2)']}
-                  style={styles.iconBackground}
+          const activeBackgroundStyle = useAnimatedStyle(() => ({
+            opacity: isFocused ? withTiming(1) : withTiming(0),
+          }));
+
+          const iconColor = isFocused ? '#16a34a' : '#6b7280';
+
+          return (
+            <AnimatedTouchable
+              key={route.key}
+              style={[styles.tab, animatedStyle]}
+              onPress={() => handlePress(route.name, isFocused, index)}
+              onLongPress={() => handleLongPress(route.name)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.iconContainer}>
+                <Animated.View style={[styles.activeBackground, activeBackgroundStyle]} />
+                <IconComponent
+                  color={iconColor}
+                  size={isFocused ? 26 : 22}
+                  strokeWidth={isFocused ? 2 : 1.5}
                 />
+              </View>
+              {options.tabBarLabel !== undefined && (
+                <Text style={[styles.label, isFocused && styles.labelFocused]}>
+                  {options.tabBarLabel as string}
+                </Text>
               )}
-              <Icon color={isFocused ? '#16a34a' : '#6b7280'} size={22} />
-            </Animated.View>
-            <Animated.Text style={[styles.label, isFocused && styles.labelFocused]}>
-              {label}
-            </Animated.Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+            </AnimatedTouchable>
+          );
+        })}
+      </View>
+    </BlurView>
   );
 };
 
@@ -110,42 +142,44 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 70,
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopWidth: 0,
+    elevation: 0,
     overflow: 'hidden',
   },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
+  tabBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 8,
+    paddingVertical: 8,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
     position: 'relative',
   },
-  iconBackground: {
+  activeBackground: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    width: '100%',
+    height: '100%',
     borderRadius: 20,
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
   },
   label: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
     color: '#6b7280',
+    marginTop: 2,
+    fontWeight: '500',
   },
   labelFocused: {
     color: '#16a34a',

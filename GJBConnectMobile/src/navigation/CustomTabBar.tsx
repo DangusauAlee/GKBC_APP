@@ -27,11 +27,12 @@ import {
   Building2,
   Compass,
   Plus,
+  MessageCircle, // <-- import the missing icon
 } from 'lucide-react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const { width } = Dimensions.get('window');
-const TAB_WIDTH = width / 5; // 5 tabs
+const TAB_WIDTH = width / 6; // Updated to 6 tabs
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -41,6 +42,7 @@ const icons = {
   Marketplace: Store,
   Businesses: Building2,
   Explore: Compass,
+  Messages: MessageCircle, // <-- add the mapping
 };
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({
@@ -97,7 +99,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
-          // Get icon component
+          // Get icon component – now Messages will map correctly
           const IconComponent = icons[route.name as keyof typeof icons] || Home;
 
           const animatedStyle = useAnimatedStyle(() => {
@@ -141,12 +143,11 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
         })}
       </View>
 
-      {/* Floating Action Button for Create Post (optional) */}
+      {/* Floating Action Button for Create Post */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => {
           // Navigate to create post modal or open modal
-          // We'll need to pass a function to open the modal; for now just log
           console.log('Open create post modal');
         }}
         activeOpacity={0.8}

@@ -10,6 +10,13 @@ import { BottomTabNavigator } from './BottomTabNavigator';
 import { BusinessDetailsScreen } from '../screens/BusinessDetails';
 import { MarketplaceDetailScreen } from '../screens/MarketplaceDetail';
 import { MarketplaceEditScreen } from '../screens/MarketplaceEdit';
+import { ConversationsListScreen } from '../screens/ConversationsList';
+import { ChatWindowScreen } from '../screens/ChatWindow';
+import { NewConversationScreen } from '../screens/NewConversation';
+import { NotificationsScreen } from '../screens/Notifications';
+import { ProfileScreen } from '../screens/Profile';
+import { HelpSupportScreen } from '../screens/HelpSupport';
+import { AnnouncementDetailScreen } from '../screens/AnnouncementDetail';
 
 export type RootStackParamList = {
   Login: { prefilledEmail?: string; message?: string; messageType?: 'success' | 'error' } | undefined;
@@ -22,6 +29,13 @@ export type RootStackParamList = {
   BusinessDetails: { id: string };
   MarketplaceDetail: { id: string };
   MarketplaceEdit: { id: string };
+  ConversationsList: undefined;
+  ChatWindow: { conversationId: string; otherUser: any; context: string; listing?: any };
+  NewConversation: undefined;
+  Notifications: undefined;
+  Profile: { userId?: string } | undefined;
+  HelpSupport: undefined;
+  AnnouncementDetail: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +54,13 @@ export function AppNavigator() {
         <Stack.Screen name="BusinessDetails" component={BusinessDetailsScreen} />
         <Stack.Screen name="MarketplaceDetail" component={MarketplaceDetailScreen} />
         <Stack.Screen name="MarketplaceEdit" component={MarketplaceEditScreen} />
+        <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
+        <Stack.Screen name="ChatWindow" component={ChatWindowScreen} />
+        <Stack.Screen name="NewConversation" component={NewConversationScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+        <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
