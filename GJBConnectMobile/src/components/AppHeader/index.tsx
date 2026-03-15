@@ -72,10 +72,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 <View style={styles.logo}>
                   <Text style={styles.logoText}>GKBC</Text>
                 </View>
-                <View style={styles.logoTextContainer}>
-                  <Text style={styles.logoTitle}>GKBC</Text>
-                  <Text style={styles.logoSubtitle}>Greater Kano</Text>
-                </View>
+
               </TouchableOpacity>
             )}
             {title && <Text style={styles.title}>{title}</Text>}

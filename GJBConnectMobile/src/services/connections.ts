@@ -93,6 +93,14 @@ export const connectionsService = {
     if (error) throw error;
   },
 
+  //Delete Connection
+  async RemoveConnection(requestId: string): Promise<void> {
+    const { error } = await supabase.rpc('remove_connection', {
+      p_request_id: requestId,
+    });
+    if (error) throw error;
+  },
+
   // Withdraw request
   async withdrawRequest(requestId: string): Promise<void> {
     const { error } = await supabase.rpc('withdraw_connection_request', {

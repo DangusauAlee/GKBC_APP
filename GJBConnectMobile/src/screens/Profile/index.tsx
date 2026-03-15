@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { ArrowLeft, MoreVertical, Edit3, Share2, LogOut, AlertCircle } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
