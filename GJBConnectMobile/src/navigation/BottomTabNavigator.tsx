@@ -5,7 +5,7 @@ import { MembersScreen } from '../screens/Members';
 import { MarketplaceScreen } from '../screens/Marketplace';
 import { BusinessesScreen } from '../screens/Businesses';
 import { ExploreScreen } from '../screens/Explore';
-import { CustomTabBar } from '../components/CustomTabBar';
+import { CustomTabBar } from './CustomTabBar';
 import { CreatePostModal } from '../components/feed/CreatePostModal';
 import { useApp } from '../context/AppContext';
 

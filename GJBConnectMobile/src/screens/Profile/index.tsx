@@ -24,7 +24,6 @@ import { useConnectionMutations } from '../../hooks/useConnectionMutations';
 import { connectionKeys } from '../../hooks/queryKeys';
 import { connectionsService } from '../../services/connections';
 import { profileService } from '../../services/profile';
-import { AppHeader } from '../../components/AppHeader';
 import { ProfileHeader } from '../../components/profile/ProfileHeader';
 import { ProfileStats } from '../../components/profile/ProfileStats';
 import { ProfileTabs } from '../../components/profile/ProfileTabs';
@@ -339,7 +338,6 @@ export const ProfileScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <AppHeader title="Profile" showBack />
 
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}

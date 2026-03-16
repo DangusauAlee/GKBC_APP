@@ -30,7 +30,6 @@ import { BusinessCard } from '../../components/business/BusinessCard';
 import { CreateBusinessModal } from '../../components/business/CreateBusinessModal';
 import { useAuthStore } from '../../store/authStore';
 import { LOCATION_AXIS } from '../../types/business';
-import { AppHeader } from '../../components/AppHeader';
 import type { Business } from '../../types/business';
 import type { RootStackParamList } from '../../navigation';
 
@@ -255,7 +254,7 @@ export const BusinessesScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
-          <AppHeader title="Business Directory" />
+          
           <View style={styles.initialLoading}>
             <ActivityIndicator size="large" color="#16a34a" />
           </View>
@@ -271,9 +270,7 @@ export const BusinessesScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <AppHeader title="Business Directory" />
 
-        {/* Search and filters outside FlatList */}
         <View style={styles.searchWrapper}>
           {renderHeader()}
         </View>

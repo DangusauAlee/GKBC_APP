@@ -28,7 +28,6 @@ import { MarketplaceListingCard } from '../../components/marketplace/Marketplace
 import { CreateListingModal } from '../../components/marketplace/CreateListingModal';
 import { FiltersPanel } from '../../components/marketplace/FiltersPanel';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
-import { AppHeader } from '../../components/AppHeader';
 import type { MarketplaceListing } from '../../types';
 import type { RootStackParamList } from '../../navigation';
 
@@ -272,7 +271,7 @@ export const MarketplaceScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <AppHeader title="Marketplace" />
+       
 
         {/* Search and filters (outside FlatList) */}
         {activeTab === 'browse' && renderHeader()}

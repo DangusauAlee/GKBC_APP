@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Platform,
   ViewToken,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,12 +20,11 @@ import { feedKeys } from '../../hooks/queryKeys';
 import { useAuthStore } from '../../store/authStore';
 import { PostCard } from '../../components/feed/PostCard';
 import { CreatePostModal } from '../../components/feed/CreatePostModal';
-import { AppHeader } from '../../components/AppHeader';
-import { Plus } from 'lucide-react-native';
+import VerifiedBadge from '../../components/shared/VerifiedBadge';
 import type { Post } from '../../types';
 
 export const HomeScreen: React.FC = () => {
-  const user = useAuthStore((state) => state.user);
+  const { user, profile } = useAuthStore();
   const queryClient = useQueryClient();
   const {
     data,
@@ -105,16 +105,29 @@ export const HomeScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity
-        style={styles.createPostButton}
+        style={styles.createPostTextBox}
         onPress={() => setShowPostModal(true)}
+        activeOpacity={0.7}
       >
-        <LinearGradient
-          colors={['#16a34a', '#15803d']}
-          style={styles.createPostGradient}
-        >
-          <Plus size={20} color="#fff" />
-          <Text style={styles.createPostText}>Create Post</Text>
-        </LinearGradient>
+        <View style={styles.createPostContent}>
+          <View style={styles.avatarContainer}>
+            {profile?.avatar_url ? (
+              <Image source={{ uri: profile.avatar_url }} style={styles.createPostAvatar} />
+            ) : (
+              <View style={styles.createPostAvatarPlaceholder}>
+                <Text style={styles.createPostAvatarInitials}>
+                  {profile?.first_name?.[0]}{profile?.last_name?.[0] || 'U'}
+                </Text>
+              </View>
+            )}
+            {profile?.user_status === 'verified' && (
+              <View style={styles.verifiedBadge}>
+                <VerifiedBadge size={10} />
+              </View>
+            )}
+          </View>
+          <Text style={styles.createPostPlaceholder}>What's on your mind?</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -163,7 +176,6 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
-        <AppHeader />
         <FlatList
           ref={flatListRef}
           data={posts}
@@ -216,21 +228,53 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: 12,
   },
-  createPostButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
+  createPostTextBox: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#16a34a', // 👈 changed from gray to green
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
-  createPostGradient: {
+  createPostContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    gap: 8,
   },
-  createPostText: {
-    color: '#fff',
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 10,
+  },
+  createPostAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#16a34a',
+  },
+  createPostAvatarPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#16a34a',
+  },
+  createPostAvatarInitials: {
+    color: '#16a34a',
+    fontWeight: 'bold',
     fontSize: 14,
-    fontWeight: '600',
+  },
+  verifiedBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+  },
+  createPostPlaceholder: {
+    fontSize: 14,
+    color: '#6b7280',
+    flex: 1,
   },
   footerLoader: {
     paddingVertical: 20,

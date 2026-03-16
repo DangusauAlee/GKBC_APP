@@ -19,6 +19,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useLikeShare } from '../../../hooks/useLikeShare';
 import { useComments } from '../../../hooks/useComments';
 import { feedService } from '../../../services/supabase/feed';
+import VerifiedBadge from '../../../components/shared/VerifiedBadge'; // adjust path as needed
 import type { PostCardProps } from './types';
 import {
   Heart,
@@ -328,13 +329,20 @@ export const PostCard: React.FC<PostCardProps> = ({
               </LinearGradient>
             )}
             {post.author_verified && (
-              <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedIcon}>✓</Text>
+              <View style={styles.avatarVerifiedBadge}>
+                <VerifiedBadge size={16} />
               </View>
             )}
           </View>
-          <View>
-            <Text style={styles.authorName}>{post.author_name}</Text>
+          <View style={styles.authorInfo}>
+            <View style={styles.authorNameRow}>
+              <Text style={styles.authorName}>{post.author_name}</Text>
+              {post.author_verified && (
+                <View style={styles.nameVerifiedBadge}>
+                  <VerifiedBadge size={12} />
+                </View>
+              )}
+            </View>
             <View style={styles.timeLocation}>
               <Text style={styles.time}>{formatTimeAgo(post.created_at)}</Text>
               {post.location && (
@@ -503,10 +511,8 @@ const styles = StyleSheet.create({
     marginHorizontal: CARD_HORIZONTAL_PADDING,
     marginBottom: 12,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
     backgroundColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.9)',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+    boxShadow: '0 8px 20px rgba(16, 94, 23, 0.2)',
     elevation: 5,
   },
   header: {
@@ -528,6 +534,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#16a34a',
   },
   avatarPlaceholder: {
     width: 40,
@@ -535,39 +543,40 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#16a34a',
   },
   avatarText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  verifiedBadge: {
+  avatarVerifiedBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#16a34a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#fff',
   },
-  verifiedIcon: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+  authorInfo: {
+    flex: 1,
+  },
+  authorNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4, // one-character gap
   },
   authorName: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1f2937',
   },
+  nameVerifiedBadge: {
+    marginLeft: 2, // additional small gap if needed
+  },
   timeLocation: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 2,
   },
   time: {
     fontSize: 11,
@@ -591,7 +600,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    boxShadow: '0 2px 8px rgba(11, 107, 16, 0.1)',
     elevation: 3,
     zIndex: 10,
   },
@@ -634,7 +643,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 12,
     overflow: 'hidden',
-    height: MEDIA_WIDTH, // default height for images/gallery
+    height: MEDIA_WIDTH,
   },
   media: {
     width: '100%',
@@ -644,9 +653,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  mediaImage: {
-    // handled by resizeMode prop
-  },
+  mediaImage: {},
   playButton: {
     position: 'absolute',
     top: '50%',
@@ -746,7 +753,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: 'rgba(17, 128, 26, 0.49)',
     marginTop: 8,
     paddingTop: 4,
   },
@@ -771,7 +778,7 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: 'rgba(19, 117, 27, 0.05)',
     padding: 12,
   },
   addComment: {

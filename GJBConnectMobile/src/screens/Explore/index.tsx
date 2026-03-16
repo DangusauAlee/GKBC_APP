@@ -23,7 +23,6 @@ import { EditJobModal } from '../../components/explore/EditJobModal';
 import { EditEventModal } from '../../components/explore/EditEventModal';
 import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
-import { AppHeader } from '../../components/AppHeader';
 import type { Job, Event } from '../../types';
 
 export const ExploreScreen: React.FC = () => {
@@ -267,7 +266,7 @@ export const ExploreScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
 
-        <AppHeader title="Explore" />
+       
 
         {/* Search and tabs outside FlatList */}
         {renderHeader()}

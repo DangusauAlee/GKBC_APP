@@ -34,7 +34,6 @@ import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 import { FeedbackToast } from '../../components/shared/FeedbackToast';
 import { formatTimeAgo } from '../../utils/formatters';
 import { useAuthStore } from '../../store/authStore';
-import { AppHeader } from '../../components/AppHeader';
 import type { RootStackParamList } from '../../navigation';
 import type { Member } from '../../types/member';
 
@@ -363,7 +362,6 @@ export const MembersScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient colors={['#f9fafb', '#f0fdf4']} style={styles.gradient}>
-          <AppHeader title="Members" />
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#16a34a" />
           </View>
@@ -378,8 +376,6 @@ export const MembersScreen: React.FC = () => {
         <View style={[styles.circle, styles.circle1]} />
         <View style={[styles.circle, styles.circle2]} />
         <View style={[styles.circle, styles.circle3]} />
-
-        <AppHeader title="Members" />
 
         <View style={styles.tabContainer}>
           <TouchableOpacity

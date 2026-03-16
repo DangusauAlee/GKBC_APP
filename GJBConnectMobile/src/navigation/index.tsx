@@ -17,6 +17,7 @@ import { NotificationsScreen } from '../screens/Notifications';
 import { ProfileScreen } from '../screens/Profile';
 import { HelpSupportScreen } from '../screens/HelpSupport';
 import { AnnouncementDetailScreen } from '../screens/AnnouncementDetail';
+import { AppHeader } from '../components/AppHeader'; // adjust path if needed
 
 export type RootStackParamList = {
   Login: { prefilledEmail?: string; message?: string; messageType?: 'success' | 'error' } | undefined;
@@ -43,7 +44,30 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={({ route }) => {
+          // List of routes that should show the custom header
+          const authenticatedRoutes = [
+            'MainTabs',
+            'BusinessDetails',
+            'MarketplaceDetail',
+            'MarketplaceEdit',
+            'ConversationsList',
+            'ChatWindow',
+            'NewConversation',
+            'Notifications',
+            'Profile',
+            'HelpSupport',
+            'AnnouncementDetail',
+          ];
+          const showHeader = authenticatedRoutes.includes(route.name);
+
+          return {
+            header: showHeader ? () => <AppHeader /> : undefined,
+            headerShown: showHeader,
+          };
+        }}
+      >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
